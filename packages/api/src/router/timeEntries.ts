@@ -15,6 +15,8 @@ export const timeEntriesRouter = {
       return ctx.db
         .select()
         .from(schema.timeEntries)
+        .leftJoin(schema.userToProjects, eq(schema.timeEntries.projectCategoryId, schema.userToProjects.projectId))
+        .leftJoin(schema.userToProjects, eq(schema.timeEntries.projectCategoryId, schema.userToProjects.projectId))
         .where(
           and(
             eq(schema.timeEntries.userId, ctx.session.user.id),
