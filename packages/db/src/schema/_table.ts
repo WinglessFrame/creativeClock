@@ -5,4 +5,4 @@ import { sqliteTableCreator } from 'drizzle-orm/sqlite-core';
  *
  * @see https://orm.drizzle.team/docs/goodies#multi-project-schema
  */
-export const mySqlTable = sqliteTableCreator((name) => `creative_clock_${name}`);
+export const sqlLiteTable = sqliteTableCreator((name) => `creative_clock_${name}`);
