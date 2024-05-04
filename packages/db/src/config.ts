@@ -3,6 +3,7 @@ import { dbEnv } from './env';
 
 export default {
   schema: './src/schema',
+  out: './src/migrations',
   driver: 'turso',
   dbCredentials: {
     url: dbEnv.TURSO_DATABASE_URL,

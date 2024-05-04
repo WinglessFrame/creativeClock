@@ -7,10 +7,12 @@ import { ThemeProvider, ThemeToggle } from "@acme/ui/theme";
 import { Toaster } from "@acme/ui/toast";
 
 import { TRPCReactProvider } from "~/trpc/react";
-
+import { SessionProvider } from "next-auth/react"
 import "~/app/globals.css";
 
 import { env } from "~/env";
+import { auth } from "@acme/auth";
+import { AuthBtn } from "./_signin";
 
 export const metadata: Metadata = {
   metadataBase: new URL(
@@ -40,7 +42,9 @@ export const viewport: Viewport = {
   ],
 };
 
-export default function RootLayout(props: { children: React.ReactNode }) {
+export default async function RootLayout(props: { children: React.ReactNode }) {
+  const session = await auth()
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body
@@ -51,11 +55,14 @@ export default function RootLayout(props: { children: React.ReactNode }) {
         )}
       >
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <TRPCReactProvider>{props.children}</TRPCReactProvider>
-          <div className="absolute bottom-4 right-4">
-            <ThemeToggle />
-          </div>
-          <Toaster />
+          <SessionProvider session={session}>
+            <TRPCReactProvider>{props.children}</TRPCReactProvider>
+            <div className="absolute bottom-4 right-4">
+              <AuthBtn />
+              <ThemeToggle />
+            </div>
+            <Toaster />
+          </SessionProvider>
         </ThemeProvider>
       </body>
     </html>

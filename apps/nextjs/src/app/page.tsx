@@ -2,9 +2,11 @@
 
 import { forwardRef, useState } from "react";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
+// import { signIn } from "@acme/auth";
 import { cn } from "@acme/ui";
 import { Button } from "@acme/ui/button";
 import {
@@ -44,8 +46,6 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@acme/ui/tabs";
 import { Textarea } from "@acme/ui/textarea";
 
-export const runtime = "edge";
-
 const formSchema = z.object({
   project: z.string(),
   task: z.string(),
@@ -82,7 +82,9 @@ export default function HomePage() {
             </NavigationMenuItem>
           </NavigationMenuList>
         </NavigationMenu>
-        <span className="h-10 w-10 rounded-full bg-slate-100" />
+        <div>
+          <span className="h-10 w-10 rounded-full bg-slate-100" />
+        </div>
       </header>
       <main className="container h-screen py-16">
         <Tabs defaultValue="Mon" className="relative mr-auto w-full">
