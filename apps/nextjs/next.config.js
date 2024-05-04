@@ -7,6 +7,15 @@ createJiti(fileURLToPath(import.meta.url))("./src/env");
 /** @type {import("next").NextConfig} */
 const config = {
   reactStrictMode: true,
+  async redirects() {
+    return [
+      {
+        source: '/',
+        destination: '/time',
+        permanent: true,
+      },
+    ]
+  },
 
   /** Enables hot reloading for local packages without a build step */
   transpilePackages: [
