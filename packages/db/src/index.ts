@@ -7,7 +7,10 @@ import * as timeEntry from "./schema/timeEntry";
 
 export * from "drizzle-orm/sql";
 
-export const schema = { ...auth, timeEntry };
+export const schema = {
+  ...auth,
+  ...timeEntry
+};
 
 const turso = createClient({
   url: dbEnv.TURSO_DATABASE_URL,
