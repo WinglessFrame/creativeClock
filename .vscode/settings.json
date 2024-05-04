@@ -3,5 +3,14 @@
     {
       "mode": "auto"
     }
-  ]
+  ],
+  "workbench.editor.customLabels.patterns": {
+    "apps/**/src/app/**/page.tsx": "${dirname} - Page",
+    "apps/**/src/app/**/layout.tsx": "${dirname} - Layout",
+    "apps/**/src/app/**/route.ts": "${dirname} - API",
+    "apps/**/src/app/**/route.tsx": "${dirname} - API"
+  },
+  "cSpell.words": [
+    "TURSO"
+  ],
 }
