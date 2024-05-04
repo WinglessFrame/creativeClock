@@ -1,45 +1,16 @@
 "use client";
 
 import { forwardRef, useState } from "react";
-import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useSession } from "next-auth/react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 // import { signIn } from "@acme/auth";
 import { cn } from "@acme/ui";
 import { Button } from "@acme/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@acme/ui/dialog";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-} from "@acme/ui/form";
-import { Label } from "@acme/ui/label";
 import { NavigationMenuLink } from "@acme/ui/navigation-menu";
-import {
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue,
-} from "@acme/ui/select";
 import { Separator } from "@acme/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@acme/ui/tabs";
-import { Textarea } from "@acme/ui/textarea";
 
 import TrackerDialog from "../_components/TrackerDialog";
 import { api } from "../../trpc/react";
@@ -108,14 +79,14 @@ export default function HomePage() {
       <TabsContent value={currentDay} className="relative rounded-md border">
         {curRecords ? (
           <div className="flex flex-col gap-4">
-            <ul className="flex flex-col gap-4">
+            <ul className="flex flex-col">
               {curRecords.map((item) => (
                 <li>
                   <div className="flex justify-between p-4">
-                    <div className="flex flex-col gap-2">
-                      <span>{item.project}</span>
-                      <span>{item.task}</span>
-                      <span>{item.notes}</span>
+                    <div className="flex flex-col gap-1">
+                      <span className="font-bold">{item.project}</span>
+                      <span className="text-sm">{item.task}</span>
+                      <span className="text-xs">{item.notes}</span>
                     </div>
                     <div className="flex items-center gap-4">
                       <span>0:00</span>
@@ -127,27 +98,23 @@ export default function HomePage() {
               ))}
             </ul>
             <TrackerDialog setCurRecords={setCurRecords}>
-              {
-                <Button
-                  className="flex h-80 w-full flex-col gap-4"
-                  variant="outline"
-                >
-                  +
-                </Button>
-              }
+              <Button
+                className="mx-auto mb-4 h-12 w-full max-w-44 text-3xl"
+                variant="outline"
+              >
+                +
+              </Button>
             </TrackerDialog>
           </div>
         ) : (
           <TrackerDialog setCurRecords={setCurRecords}>
-            {
-              <Button
-                className="flex h-80 w-full flex-col gap-4"
-                variant="outline"
-              >
-                <span className="text-3xl">No time tracked today</span>
-                <span>Click to add your first record</span>
-              </Button>
-            }
+            <Button
+              className="flex h-80 w-full flex-col gap-4"
+              variant="outline"
+            >
+              <span className="text-3xl">No time tracked today</span>
+              <span>Click to add your first record</span>
+            </Button>
           </TrackerDialog>
         )}
       </TabsContent>

@@ -61,9 +61,8 @@ const TrackerDialog = ({
     closeForm();
   };
   return (
-    <Dialog modal={false} open={isFormOpen} onOpenChange={setIsFormOpen}>
+    <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
-
       <DialogContent className="sm:max-w-[800px]">
         <DialogHeader>
           <DialogTitle>Track time</DialogTitle>
