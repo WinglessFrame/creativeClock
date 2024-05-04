@@ -2,6 +2,7 @@
 
 import { forwardRef, useState } from "react";
 import Link from "next/link";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useSession } from "next-auth/react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -55,10 +56,23 @@ const formSchema = z.object({
 export default function HomePage() {
   const [curRecords, setCurRecords] = useState(null);
 
-  const form = useForm<z.infer<typeof formSchema>>({});
+  const [isFormOpen, setIsFormOpen] = useState(false);
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+  });
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
     console.log(values);
+
+    closeForm();
+  };
+
+  const openForm = () => {
+    setIsFormOpen(true);
+  };
+  const closeForm = () => {
+    setIsFormOpen(false);
   };
 
   return (
@@ -116,12 +130,17 @@ export default function HomePage() {
           </div>
           <TabsContent value={"Mon"} className="relative rounded-md border">
             <div className="flex h-80 items-center justify-between ">
-              <Dialog modal={false}>
+              <Dialog
+                modal={false}
+                open={isFormOpen}
+                onOpenChange={setIsFormOpen}
+              >
                 <DialogTrigger asChild>
                   <Button className="h-full w-full" variant="outline">
                     Track time
                   </Button>
                 </DialogTrigger>
+
                 <DialogContent className="sm:max-w-[800px]">
                   <DialogHeader>
                     <DialogTitle>Track time</DialogTitle>
@@ -132,50 +151,58 @@ export default function HomePage() {
                   </DialogHeader>
                   <Form {...form}>
                     <form
+                      id="form"
                       onSubmit={form.handleSubmit(onSubmit)}
-                      className="grid  grid-cols-4 items-center gap-4 py-4"
+                      className="grid items-center gap-4 py-4"
                     >
                       <FormField
                         control={form.control}
                         name="project"
-                        render={() => (
+                        render={({ field }) => (
                           <FormItem className="grid grid-cols-4 items-center gap-4">
                             <FormLabel className="text-right">
                               Project
                             </FormLabel>
                             <FormControl>
-                              <Select>
+                              <Select
+                                onValueChange={field.onChange}
+                                value={field.value}
+                              >
                                 <SelectTrigger className="col-span-3">
                                   <SelectValue placeholder="Select type of task" />
                                 </SelectTrigger>
                                 <SelectContent>
                                   <SelectGroup className="px-2">
                                     <SelectLabel>CreativeIT</SelectLabel>
-                                    {["Apple", "Banana", "Grapse"].map(
-                                      (item) => (
-                                        <SelectItem
-                                          key={item}
-                                          className="ml-2"
-                                          value={item}
-                                        >
-                                          {item}
-                                        </SelectItem>
-                                      ),
-                                    )}
+                                    {[
+                                      "afsasdsadsa",
+                                      "asfsadasd",
+                                      "asfdsadasd",
+                                    ].map((item) => (
+                                      <SelectItem
+                                        key={`0_${item}`}
+                                        className="ml-2"
+                                        value={item}
+                                      >
+                                        {item}
+                                      </SelectItem>
+                                    ))}
                                   </SelectGroup>
                                   <SelectGroup className="px-2">
                                     <SelectLabel>MyCoolProject</SelectLabel>
-                                    {["Apple", "Banana", "Grapse"].map(
-                                      (item) => (
-                                        <SelectItem
-                                          key={item}
-                                          className="ml-2"
-                                          value={item}
-                                        >
-                                          {item}
-                                        </SelectItem>
-                                      ),
-                                    )}
+                                    {[
+                                      "asdsad1",
+                                      "asdasdsadsad",
+                                      "adsadsadsa",
+                                    ].map((item) => (
+                                      <SelectItem
+                                        key={item}
+                                        className="ml-2"
+                                        value={item}
+                                      >
+                                        {item}
+                                      </SelectItem>
+                                    ))}
                                   </SelectGroup>
                                 </SelectContent>
                               </Select>
@@ -183,46 +210,52 @@ export default function HomePage() {
                           </FormItem>
                         )}
                       />
-
                       <FormField
                         control={form.control}
                         name="task"
-                        render={() => (
+                        render={({ field }) => (
                           <FormItem className="grid grid-cols-4 items-center gap-4">
                             <Label className="text-right">Task</Label>
                             <FormControl>
-                              <Select>
+                              <Select
+                                onValueChange={field.onChange}
+                                value={field.value}
+                              >
                                 <SelectTrigger className="col-span-3">
                                   <SelectValue placeholder="Select type of task" />
                                 </SelectTrigger>
                                 <SelectContent>
                                   <SelectGroup className="px-2">
                                     <SelectLabel>Billable</SelectLabel>
-                                    {["Apple", "Banana", "Grapse"].map(
-                                      (item) => (
-                                        <SelectItem
-                                          key={item}
-                                          className="ml-2"
-                                          value={item}
-                                        >
-                                          {item}
-                                        </SelectItem>
-                                      ),
-                                    )}
+                                    {[
+                                      "asdasdsa",
+                                      "hdfgsdfdg",
+                                      "sdgdsfgfgsd",
+                                    ].map((item) => (
+                                      <SelectItem
+                                        key={`0_${item}`}
+                                        className="ml-2"
+                                        value={item}
+                                      >
+                                        {item}
+                                      </SelectItem>
+                                    ))}
                                   </SelectGroup>
                                   <SelectGroup className="px-2">
                                     <SelectLabel>Non-billable</SelectLabel>
-                                    {["Apple", "Banana", "Grapse"].map(
-                                      (item) => (
-                                        <SelectItem
-                                          key={item}
-                                          className="ml-2"
-                                          value={item}
-                                        >
-                                          {item}
-                                        </SelectItem>
-                                      ),
-                                    )}
+                                    {[
+                                      "gdfdfgfdg",
+                                      "sdfdfsdgfsd",
+                                      "dsfdsgsgsd",
+                                    ].map((item) => (
+                                      <SelectItem
+                                        key={`1_${item}`}
+                                        className="ml-2"
+                                        value={item}
+                                      >
+                                        {item}
+                                      </SelectItem>
+                                    ))}
                                   </SelectGroup>
                                 </SelectContent>
                               </Select>
@@ -230,15 +263,15 @@ export default function HomePage() {
                           </FormItem>
                         )}
                       />
-
                       <FormField
                         control={form.control}
                         name="notes"
-                        render={() => (
+                        render={({ field }) => (
                           <FormItem className="grid grid-cols-4 items-center gap-4">
                             <Label className="text-right">Notes</Label>
                             <FormControl>
                               <Textarea
+                                {...field}
                                 className="col-span-3"
                                 placeholder="Notes(optional)"
                               />
@@ -249,7 +282,9 @@ export default function HomePage() {
                     </form>
                   </Form>
                   <DialogFooter>
-                    <Button type="submit">Save changes</Button>
+                    <Button form="form" type="submit">
+                      Save changes
+                    </Button>
                   </DialogFooter>
                 </DialogContent>
               </Dialog>
