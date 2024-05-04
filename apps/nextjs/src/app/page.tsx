@@ -1,10 +1,30 @@
 "use client";
 
-import { forwardRef } from "react";
+import { forwardRef, useState } from "react";
 import Link from "next/link";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 
 import { cn } from "@acme/ui";
 import { Button } from "@acme/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@acme/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+} from "@acme/ui/form";
+import { Input } from "@acme/ui/input";
+import { Label } from "@acme/ui/label";
 import {
   NavigationMenu,
   NavigationMenuItem,
@@ -12,11 +32,35 @@ import {
   NavigationMenuList,
   navigationMenuTriggerStyle,
 } from "@acme/ui/navigation-menu";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@acme/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@acme/ui/tabs";
+import { Textarea } from "@acme/ui/textarea";
 
 export const runtime = "edge";
 
+const formSchema = z.object({
+  project: z.string(),
+  task: z.string(),
+  notes: z.string().optional(),
+});
+
 export default function HomePage() {
+  const [curRecords, setCurRecords] = useState(null);
+
+  const form = useForm<z.infer<typeof formSchema>>({});
+
+  const onSubmit = (values: z.infer<typeof formSchema>) => {
+    console.log(values);
+  };
+
   return (
     <>
       <header className="flex items-center justify-between py-4">
@@ -41,41 +85,175 @@ export default function HomePage() {
         <span className="h-10 w-10 rounded-full bg-slate-100" />
       </header>
       <main className="container h-screen py-16">
-        <Tabs defaultValue="Monday" className="relative mr-auto w-full">
+        <Tabs defaultValue="Mon" className="relative mr-auto w-full">
           <div className="flex items-center justify-between pb-3">
-            <TabsList className="w-full justify-start rounded-none border-b bg-transparent p-0">
-              {[
-                "Monday",
-                "Tuesday",
-                "Wednesday",
-                "Thursday",
-                "Friday",
-                "Saturday",
-                "Sunday",
-              ].map((item) => (
+            <TabsList className="w-full justify-start gap-6 rounded-none border-b bg-transparent p-0">
+              {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((item) => (
                 <TabsTrigger
                   key={item}
                   value={item}
-                  className="relative h-9 rounded-none border-b-2 border-b-transparent bg-transparent px-4 pb-3 pt-2 font-semibold text-muted-foreground shadow-none transition-none data-[state=active]:border-b-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
+                  className="relative h-9 w-24 rounded-none border-b-2 border-b-transparent bg-transparent px-4 pb-7  pt-2 font-semibold text-muted-foreground shadow-none transition-none data-[state=active]:border-b-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
                 >
-                  {item}
+                  <div className="flex flex-col items-start gap-1">
+                    <span>{item}</span>
+                    <span className="text-xs">0:00</span>
+                  </div>
                 </TabsTrigger>
               ))}
               <TabsTrigger
                 value="total"
                 disabled
-                className="relative ml-auto h-9 rounded-none border-b-2 border-b-transparent bg-transparent px-4 pb-3 pt-2 font-semibold text-muted-foreground shadow-none transition-none data-[state=active]:border-b-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
+                className="relative ml-auto h-9 rounded-none border-b-2 border-b-transparent bg-transparent px-4 pb-7  pt-2 font-semibold text-muted-foreground shadow-none transition-none data-[state=active]:border-b-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
               >
-                {"Week total"}
+                <div className="flex flex-col items-start gap-1">
+                  <span>{"Week total"}</span>
+                  <span className="text-xs">0:00</span>
+                </div>
               </TabsTrigger>
             </TabsList>
           </div>
-          <TabsContent value={"Monday"} className="relative rounded-md border">
-            <div className="flex h-80 items-center justify-between p-4">
-              <Button className="h-full w-full">Track time</Button>
+          <TabsContent value={"Mon"} className="relative rounded-md border">
+            <div className="flex h-80 items-center justify-between ">
+              <Dialog modal={false}>
+                <DialogTrigger asChild>
+                  <Button className="h-full w-full" variant="outline">
+                    Track time
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[800px]">
+                  <DialogHeader>
+                    <DialogTitle>Track time</DialogTitle>
+                    <DialogDescription>
+                      Make changes to your profile here. Click save when you're
+                      done.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <Form {...form}>
+                    <form
+                      onSubmit={form.handleSubmit(onSubmit)}
+                      className="grid  grid-cols-4 items-center gap-4 py-4"
+                    >
+                      <FormField
+                        control={form.control}
+                        name="project"
+                        render={() => (
+                          <FormItem className="grid grid-cols-4 items-center gap-4">
+                            <FormLabel className="text-right">
+                              Project
+                            </FormLabel>
+                            <FormControl>
+                              <Select>
+                                <SelectTrigger className="col-span-3">
+                                  <SelectValue placeholder="Select type of task" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectGroup className="px-2">
+                                    <SelectLabel>CreativeIT</SelectLabel>
+                                    {["Apple", "Banana", "Grapse"].map(
+                                      (item) => (
+                                        <SelectItem
+                                          key={item}
+                                          className="ml-2"
+                                          value={item}
+                                        >
+                                          {item}
+                                        </SelectItem>
+                                      ),
+                                    )}
+                                  </SelectGroup>
+                                  <SelectGroup className="px-2">
+                                    <SelectLabel>MyCoolProject</SelectLabel>
+                                    {["Apple", "Banana", "Grapse"].map(
+                                      (item) => (
+                                        <SelectItem
+                                          key={item}
+                                          className="ml-2"
+                                          value={item}
+                                        >
+                                          {item}
+                                        </SelectItem>
+                                      ),
+                                    )}
+                                  </SelectGroup>
+                                </SelectContent>
+                              </Select>
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="task"
+                        render={() => (
+                          <FormItem className="grid grid-cols-4 items-center gap-4">
+                            <Label className="text-right">Task</Label>
+                            <FormControl>
+                              <Select>
+                                <SelectTrigger className="col-span-3">
+                                  <SelectValue placeholder="Select type of task" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectGroup className="px-2">
+                                    <SelectLabel>Billable</SelectLabel>
+                                    {["Apple", "Banana", "Grapse"].map(
+                                      (item) => (
+                                        <SelectItem
+                                          key={item}
+                                          className="ml-2"
+                                          value={item}
+                                        >
+                                          {item}
+                                        </SelectItem>
+                                      ),
+                                    )}
+                                  </SelectGroup>
+                                  <SelectGroup className="px-2">
+                                    <SelectLabel>Non-billable</SelectLabel>
+                                    {["Apple", "Banana", "Grapse"].map(
+                                      (item) => (
+                                        <SelectItem
+                                          key={item}
+                                          className="ml-2"
+                                          value={item}
+                                        >
+                                          {item}
+                                        </SelectItem>
+                                      ),
+                                    )}
+                                  </SelectGroup>
+                                </SelectContent>
+                              </Select>
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="notes"
+                        render={() => (
+                          <FormItem className="grid grid-cols-4 items-center gap-4">
+                            <Label className="text-right">Notes</Label>
+                            <FormControl>
+                              <Textarea
+                                className="col-span-3"
+                                placeholder="Notes(optional)"
+                              />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
+                    </form>
+                  </Form>
+                  <DialogFooter>
+                    <Button type="submit">Save changes</Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
             </div>
           </TabsContent>
-          <TabsContent value={"Tuesday"}>
+          <TabsContent value={"Tue"}>
             <div className="flex flex-col space-y-4">
               <div className="w-full rounded-md [&_pre]:my-0 [&_pre]:max-h-[350px] [&_pre]:overflow-auto"></div>
             </div>
