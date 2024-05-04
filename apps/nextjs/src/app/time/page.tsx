@@ -42,6 +42,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@acme/ui/tabs";
 import { Textarea } from "@acme/ui/textarea";
 
 import TrackerDialog from "../_components/TrackerDialog";
+import { api } from "../../trpc/react";
 
 const formSchema = z.object({
   project: z.string(),
@@ -73,6 +74,8 @@ export default function HomePage() {
   const closeForm = () => {
     setIsFormOpen(false);
   };
+
+  const projectsQuery = api.timeEntries.getUserCategories.useQuery();
 
   return (
     <Tabs

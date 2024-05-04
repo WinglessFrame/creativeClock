@@ -5,14 +5,18 @@ import { and, eq, gte, lte, schema } from "@acme/db";
 import { protectedProcedure } from "../trpc";
 
 export const timeEntriesRouter = {
-  getUserCategories: protectedProcedure.query(({ ctx }) => {
-    return ctx.db
-      .select()
+  getUserCategories: protectedProcedure.query(async ({ ctx }) => {
+    const result = await ctx.db
+      .select({
+        project: { ...schema.projects, categories: schema.projectCategory },
+      })
       .from(schema.userToProjects)
-      .leftJoin(schema.projects, eq(schema.userToProjects.projectId, schema.projects.id))
-      .leftJoin(schema.projectCategory, eq(schema.projects.id, schema.projectCategory.project))
+      .innerJoin(schema.projects, eq(schema.userToProjects.projectId, schema.projects.id))
+      .innerJoin(schema.projectCategory, eq(schema.projects.id, schema.projectCategory.projectId))
       .where(eq(schema.userToProjects.userId, ctx.session.user.id))
       .all();
+
+    return result
   }),
   getUserTimeEntries: protectedProcedure
     .input(
