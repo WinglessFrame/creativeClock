@@ -52,25 +52,29 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
     <html lang="en" suppressHydrationWarning>
       <body
         className={cn(
-          "mx-auto flex min-h-screen max-w-7xl flex-col  bg-background font-sans text-foreground antialiased",
+          "bg-background font-sans text-foreground antialiased",
           GeistSans.variable,
           GeistMono.variable,
         )}
       >
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <SessionProvider session={session}>
-            <TRPCReactProvider>
-              <Header />
-              <main className="container h-screen py-16">{props.children}</main>
-            </TRPCReactProvider>
+        <div className="mx-auto flex min-h-screen max-w-7xl flex-col">
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+            <SessionProvider session={session}>
+              <TRPCReactProvider>
+                <Header />
+                <main className="container h-screen py-16">
+                  {props.children}
+                </main>
+              </TRPCReactProvider>
 
-            <div className="absolute bottom-4 right-4">
-              <AuthBtn />
-              <ThemeToggle />
-            </div>
-            <Toaster />
-          </SessionProvider>
-        </ThemeProvider>
+              <div className="absolute bottom-4 right-4">
+                <AuthBtn />
+                <ThemeToggle />
+              </div>
+              <Toaster />
+            </SessionProvider>
+          </ThemeProvider>
+        </div>
       </body>
     </html>
   );
