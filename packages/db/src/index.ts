@@ -4,12 +4,14 @@ import { createClient } from "@libsql/client";
 import { dbEnv } from "./env";
 import * as auth from "./schema/auth";
 import * as timeEntry from "./schema/timeEntry";
+import * as permissions from "./schema/permission";
 
 export * from "drizzle-orm/sql";
 
 export const schema = {
   ...auth,
-  ...timeEntry
+  ...timeEntry,
+  ...permissions,
 };
 
 const turso = createClient({
