@@ -75,7 +75,7 @@ export default function HomePage() {
                 </li>
               ))}
             </ul>
-            <TrackerDialog setCurRecords={setCurRecords}>
+            <TrackerDialog >
               <Button
                 className="mx-auto mb-4 h-12 w-full max-w-44 text-3xl"
                 variant="outline"
@@ -85,7 +85,7 @@ export default function HomePage() {
             </TrackerDialog>
           </div>
         ) : (
-          <TrackerDialog setCurRecords={setCurRecords}>
+          <TrackerDialog>
             <Button
               className="flex h-80 w-full flex-col gap-4"
               variant="outline"

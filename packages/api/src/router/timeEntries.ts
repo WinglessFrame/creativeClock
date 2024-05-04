@@ -56,7 +56,7 @@ export const timeEntriesRouter = {
     .input(
       z.object({
         date: z.date(),
-        notes: z.string(),
+        notes: z.string().optional(),
         projectCategoryId: z.string(),
         timeInMinutes: z.number().min(1),
       }),

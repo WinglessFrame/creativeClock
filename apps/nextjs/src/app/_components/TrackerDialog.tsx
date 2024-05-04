@@ -2,7 +2,7 @@
 
 import { Dispatch, ReactNode, SetStateAction, useMemo, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, useWatch } from "react-hook-form";
+import { useForm, useWatch, SubmitHandler } from "react-hook-form";
 import { z } from "zod";
 
 import { Button } from "@acme/ui/button";
@@ -34,36 +34,43 @@ import {
 } from "@acme/ui/select";
 import { Textarea } from "@acme/ui/textarea";
 import { api } from "../../trpc/react";
+import { Input } from "@acme/ui/input";
 
 const formSchema = z.object({
-  project: z.string(),
-  task: z.string(),
+  projectId: z.string(),
+  projectCategoryId: z.string(),
+  timeInMinutes: z.number(),
   notes: z.string().optional(),
 });
 
 const TrackerDialog = ({
   children,
-  setCurRecords,
 }: {
   children: ReactNode;
-  setCurRecords: Dispatch<SetStateAction<z.infer<typeof formSchema>[] | null>>;
 }) => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
   });
 
+  const createTimeEntry = api.timeEntries.createTimeEntry.useMutation()
+
   const closeForm = () => {
     setIsFormOpen(false);
   };
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
-    setCurRecords((cur) => (cur ? cur.concat(values) : [values]));
+  const onSubmit: SubmitHandler<z.infer<typeof formSchema>> = (values) => {
+    createTimeEntry.mutate({
+      date: new Date(),
+      notes: values.notes,
+      projectCategoryId: values.projectCategoryId,
+      timeInMinutes: values.timeInMinutes,
+    })
     closeForm();
   };
 
 
-  const selectedCategory = useWatch({ control: form.control, name: 'project' })
+  const selectedCategory = useWatch({ control: form.control, name: 'projectId' })
 
   const projectsQuery = api.timeEntries.getUserCategories.useQuery();
   const createEntryMutation = api.timeEntries.createTimeEntry.useMutation()
@@ -94,7 +101,7 @@ const TrackerDialog = ({
           >
             <FormField
               control={form.control}
-              name="project"
+              name="projectId"
               render={({ field }) => (
                 <FormItem className="grid grid-cols-4 items-center gap-4">
                   <FormLabel className="text-right">Project</FormLabel>
@@ -123,7 +130,7 @@ const TrackerDialog = ({
             />
             <FormField
               control={form.control}
-              name="task"
+              name="projectCategoryId"
               render={({ field }) => (
                 <FormItem className="grid grid-cols-4 items-center gap-4">
                   <Label className="text-right">Task</Label>
@@ -161,6 +168,23 @@ const TrackerDialog = ({
                       {...field}
                       className="col-span-3"
                       placeholder="Notes(optional)"
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="timeInMinutes"
+              render={({ field }) => (
+                <FormItem className="grid grid-cols-4 items-center gap-4">
+                  <Label className="text-right">Time in minutes</Label>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      type="number"
+                      className="col-span-3"
+                      placeholder="0"
                     />
                   </FormControl>
                 </FormItem>
