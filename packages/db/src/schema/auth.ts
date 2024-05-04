@@ -1,86 +1,62 @@
-import { relations, sql } from "drizzle-orm";
 import {
-  index,
-  int,
+  integer,
   primaryKey,
   text,
 } from "drizzle-orm/sqlite-core";
+import type { AdapterAccount } from "next-auth/adapters"
 
 import { sqlLiteTable } from "./_table";
 
 export const users = sqlLiteTable("user", {
-  id: text("id", { length: 255 }).notNull().primaryKey(),
-  name: text("name", { length: 255 }),
-  email: text("email", { length: 255 }).notNull(),
-  emailVerified: int('emailVerified', { mode: 'timestamp' })
-    .notNull()
-    .default(sql`(unixepoch())`),
-  image: text("image", { length: 255 }),
-});
-
-export const usersRelations = relations(users, ({ many }) => ({
-  accounts: many(accounts),
-}));
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  name: text("name"),
+  email: text("email").notNull(),
+  emailVerified: integer("emailVerified", { mode: "timestamp_ms" }),
+  image: text("image"),
+})
 
 export const accounts = sqlLiteTable(
   "account",
   {
-    userId: text("userId", { length: 255 }).notNull(),
-    type: text("type", { length: 255 })
-      .$type<"oauth" | "oidc" | "email">()
-      .notNull(),
-    provider: text("provider", { length: 255 }).notNull(),
-    providerAccountId: text("providerAccountId", { length: 255 }).notNull(),
-    refresh_token: text("refresh_token", { length: 255 }),
+    userId: text("userId")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    type: text("type").$type<AdapterAccount["type"]>().notNull(),
+    provider: text("provider").notNull(),
+    providerAccountId: text("providerAccountId").notNull(),
+    refresh_token: text("refresh_token"),
     access_token: text("access_token"),
-    expires_at: int("expires_at"),
-    token_type: text("token_type", { length: 255 }),
-    scope: text("scope", { length: 255 }),
+    expires_at: integer("expires_at"),
+    token_type: text("token_type"),
+    scope: text("scope"),
     id_token: text("id_token"),
-    session_state: text("session_state", { length: 255 }),
+    session_state: text("session_state"),
   },
   (account) => ({
     compoundKey: primaryKey({
       columns: [account.provider, account.providerAccountId],
     }),
-    userIdIdx: index("userId_idx").on(account.userId),
-  }),
-);
+  })
+)
 
-export const accountsRelations = relations(accounts, ({ one }) => ({
-  user: one(users, { fields: [accounts.userId], references: [users.id] }),
-}));
-
-export const sessions = sqlLiteTable(
-  "session",
-  {
-    sessionToken: text("sessionToken", { length: 255 })
-      .notNull()
-      .primaryKey(),
-    userId: text("userId", { length: 255 }).notNull(),
-    expires: int('expires', { mode: 'timestamp' })
-      .notNull()
-      .default(sql`(unixepoch())`),
-  },
-  (session) => ({
-    userIdIdx: index("userId_idx").on(session.userId),
-  }),
-);
-
-export const sessionsRelations = relations(sessions, ({ one }) => ({
-  user: one(users, { fields: [sessions.userId], references: [users.id] }),
-}));
+export const sessions = sqlLiteTable("session", {
+  sessionToken: text("sessionToken").primaryKey(),
+  userId: text("userId")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  expires: integer("expires", { mode: "timestamp_ms" }).notNull(),
+})
 
 export const verificationTokens = sqlLiteTable(
   "verificationToken",
   {
-    identifier: text("identifier", { length: 255 }).notNull(),
-    token: text("token", { length: 255 }).notNull(),
-    expires: int('expires', { mode: 'timestamp' })
-      .notNull()
-      .default(sql`(unixepoch())`),
+    identifier: text("identifier").notNull(),
+    token: text("token").notNull(),
+    expires: integer("expires", { mode: "timestamp_ms" }).notNull(),
   },
   (vt) => ({
     compoundKey: primaryKey({ columns: [vt.identifier, vt.token] }),
-  }),
-);
+  })
+)

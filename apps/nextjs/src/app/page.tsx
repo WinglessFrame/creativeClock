@@ -2,7 +2,7 @@
 
 import { forwardRef } from "react";
 import Link from "next/link";
-
+// import { signIn } from "@acme/auth";
 import { cn } from "@acme/ui";
 import { Button } from "@acme/ui/button";
 import {
@@ -13,8 +13,7 @@ import {
   navigationMenuTriggerStyle,
 } from "@acme/ui/navigation-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@acme/ui/tabs";
-
-export const runtime = "edge";
+import { useSession } from "next-auth/react"
 
 export default function HomePage() {
   return (
@@ -38,7 +37,10 @@ export default function HomePage() {
             </NavigationMenuItem>
           </NavigationMenuList>
         </NavigationMenu>
-        <span className="h-10 w-10 rounded-full bg-slate-100" />
+        <div>
+          <span className="h-10 w-10 rounded-full bg-slate-100" />
+        </div>
+
       </header>
       <main className="container h-screen py-16">
         <Tabs defaultValue="Monday" className="relative mr-auto w-full">
@@ -111,3 +113,6 @@ const ListItem = forwardRef<
   );
 });
 ListItem.displayName = "ListItem";
+
+
+
