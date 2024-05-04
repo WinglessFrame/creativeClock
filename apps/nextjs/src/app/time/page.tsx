@@ -1,11 +1,10 @@
 "use client";
 
-import { forwardRef, useState } from "react";
+import { forwardRef, useMemo, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 
-// import { signIn } from "@acme/auth";
 import { cn } from "@acme/ui";
 import { Button } from "@acme/ui/button";
 import { NavigationMenuLink } from "@acme/ui/navigation-menu";
@@ -45,8 +44,6 @@ export default function HomePage() {
   const closeForm = () => {
     setIsFormOpen(false);
   };
-
-  const projectsQuery = api.timeEntries.getUserCategories.useQuery();
 
   return (
     <Tabs

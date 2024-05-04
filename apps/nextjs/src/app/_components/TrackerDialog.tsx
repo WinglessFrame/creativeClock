@@ -1,8 +1,8 @@
 "use client";
 
-import { Dispatch, ReactNode, SetStateAction, useState } from "react";
+import { Dispatch, ReactNode, SetStateAction, useMemo, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 
 import { Button } from "@acme/ui/button";
@@ -33,6 +33,7 @@ import {
   SelectValue,
 } from "@acme/ui/select";
 import { Textarea } from "@acme/ui/textarea";
+import { api } from "../../trpc/react";
 
 const formSchema = z.object({
   project: z.string(),
@@ -60,6 +61,21 @@ const TrackerDialog = ({
     setCurRecords((cur) => (cur ? cur.concat(values) : [values]));
     closeForm();
   };
+
+
+  const selectedCategory = useWatch({ control: form.control, name: 'project' })
+
+  const projectsQuery = api.timeEntries.getUserCategories.useQuery();
+  const createEntryMutation = api.timeEntries.createTimeEntry.useMutation()
+
+  const categories = useMemo(() => {
+    if (projectsQuery.isSuccess) {
+      return projectsQuery.data.find(project => project.id === selectedCategory)?.categories
+    }
+    return null
+  }, [projectsQuery.isSuccess, projectsQuery.data, selectedCategory])
+
+
   return (
     <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
@@ -88,34 +104,17 @@ const TrackerDialog = ({
                         <SelectValue placeholder="Select type of task" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectGroup className="px-2">
-                          <SelectLabel>CreativeIT</SelectLabel>
-                          {["afsasdsadsa", "asfsadasd", "asfdsadasd"].map(
-                            (item) => (
-                              <SelectItem
-                                key={`0_${item}`}
-                                className="ml-2"
-                                value={item}
-                              >
-                                {item}
-                              </SelectItem>
-                            ),
-                          )}
-                        </SelectGroup>
-                        <SelectGroup className="px-2">
-                          <SelectLabel>MyCoolProject</SelectLabel>
-                          {["asdsad1", "asdasdsadsad", "adsadsadsa"].map(
-                            (item) => (
-                              <SelectItem
-                                key={item}
-                                className="ml-2"
-                                value={item}
-                              >
-                                {item}
-                              </SelectItem>
-                            ),
-                          )}
-                        </SelectGroup>
+                        {projectsQuery.data?.map(
+                          (item) => (
+                            <SelectItem
+                              key={item.id}
+                              className="ml-2"
+                              value={item.id}
+                            >
+                              {item.name}
+                            </SelectItem>
+                          ),
+                        )}
                       </SelectContent>
                     </Select>
                   </FormControl>
@@ -129,39 +128,22 @@ const TrackerDialog = ({
                 <FormItem className="grid grid-cols-4 items-center gap-4">
                   <Label className="text-right">Task</Label>
                   <FormControl>
-                    <Select onValueChange={field.onChange} value={field.value}>
+                    <Select disabled={!categories || !categories.length} onValueChange={field.onChange} value={field.value}>
                       <SelectTrigger className="col-span-3">
                         <SelectValue placeholder="Select type of task" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectGroup className="px-2">
-                          <SelectLabel>Billable</SelectLabel>
-                          {["asdasdsa", "hdfgsdfdg", "sdgdsfgfgsd"].map(
-                            (item) => (
-                              <SelectItem
-                                key={`0_${item}`}
-                                className="ml-2"
-                                value={item}
-                              >
-                                {item}
-                              </SelectItem>
-                            ),
-                          )}
-                        </SelectGroup>
-                        <SelectGroup className="px-2">
-                          <SelectLabel>Non-billable</SelectLabel>
-                          {["gdfdfgfdg", "sdfdfsdgfsd", "dsfdsgsgsd"].map(
-                            (item) => (
-                              <SelectItem
-                                key={`1_${item}`}
-                                className="ml-2"
-                                value={item}
-                              >
-                                {item}
-                              </SelectItem>
-                            ),
-                          )}
-                        </SelectGroup>
+                        {categories?.map(
+                          (item) => (
+                            <SelectItem
+                              key={item.id}
+                              className="ml-2"
+                              value={item.id}
+                            >
+                              {item.name}
+                            </SelectItem>
+                          ),
+                        )}
                       </SelectContent>
                     </Select>
                   </FormControl>

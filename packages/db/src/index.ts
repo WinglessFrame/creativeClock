@@ -7,6 +7,7 @@ import * as timeEntry from "./schema/timeEntry";
 import * as permissions from "./schema/permission";
 
 export * from "drizzle-orm/sql";
+export { getTableColumns } from "drizzle-orm"
 
 export const schema = {
   ...auth,
@@ -19,5 +20,5 @@ const turso = createClient({
   authToken: dbEnv.TURSO_AUTH_TOKEN,
 });
 
+export const db = drizzle(turso, { schema });
 
-export const db = drizzle(turso);

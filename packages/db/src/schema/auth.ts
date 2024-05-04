@@ -6,6 +6,8 @@ import {
 import type { AdapterAccount } from "next-auth/adapters"
 
 import { sqlLiteTable } from "./_table";
+import { relations } from "drizzle-orm";
+import { usersToProjects } from "./permission";
 
 export const users = sqlLiteTable("user", {
   id: text("id")
@@ -16,6 +18,10 @@ export const users = sqlLiteTable("user", {
   emailVerified: integer("emailVerified", { mode: "timestamp_ms" }),
   image: text("image"),
 })
+
+export const userRelations = relations(users, ({ many }) => ({
+  userToProjects: many(usersToProjects)
+}))
 
 export const accounts = sqlLiteTable(
   "account",
