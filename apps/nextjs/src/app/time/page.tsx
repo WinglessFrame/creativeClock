@@ -1,18 +1,15 @@
 "use client";
 
-import { forwardRef, useMemo, useState } from "react";
+import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 
-import { cn } from "@acme/ui";
 import { Button } from "@acme/ui/button";
-import { NavigationMenuLink } from "@acme/ui/navigation-menu";
 import { Separator } from "@acme/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@acme/ui/tabs";
 
 import TrackerDialog from "../_components/TrackerDialog";
-import { api } from "../../trpc/react";
 
 const formSchema = z.object({
   project: z.string(),
@@ -118,29 +115,3 @@ export default function HomePage() {
     </Tabs>
   );
 }
-
-const ListItem = forwardRef<
-  React.ElementRef<"a">,
-  React.ComponentPropsWithoutRef<"a">
->(({ className, title, children, ...props }, ref) => {
-  return (
-    <li>
-      <NavigationMenuLink asChild>
-        <a
-          ref={ref}
-          className={cn(
-            "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
-            className,
-          )}
-          {...props}
-        >
-          <div className="text-sm font-medium leading-none">{title}</div>
-          <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-            {children}
-          </p>
-        </a>
-      </NavigationMenuLink>
-    </li>
-  );
-});
-ListItem.displayName = "ListItem";
