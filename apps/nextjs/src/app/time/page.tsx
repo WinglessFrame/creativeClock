@@ -84,13 +84,16 @@ export default function HomePage() {
           <NavigationMenuList>
             <NavigationMenuItem>
               <Link href="/time" legacyBehavior passHref>
-                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                <NavigationMenuLink
+                  active
+                  className={navigationMenuTriggerStyle()}
+                >
                   Time
                 </NavigationMenuLink>
               </Link>
             </NavigationMenuItem>
             <NavigationMenuItem>
-              <Link href="/docs" legacyBehavior passHref>
+              <Link href="/expenses" legacyBehavior passHref>
                 <NavigationMenuLink className={navigationMenuTriggerStyle()}>
                   Expenses
                 </NavigationMenuLink>
