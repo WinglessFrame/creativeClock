@@ -1,5 +1,6 @@
 "use client";
 
+import { ReactElement } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -11,20 +12,21 @@ import {
   navigationMenuTriggerStyle,
 } from "@acme/ui/navigation-menu";
 
-const Header = () => (
-  <header className="flex items-center justify-between py-4">
-    <NavigationMenu>
-      <NavigationMenuList>
-        {[
-          { href: "/time" as const, label: "Time" },
-          { href: "/expenses" as const, label: "Expenses" },
-        ].map((item) => (
-          <NavItem key={item.href} {...item} />
-        ))}
-      </NavigationMenuList>
-    </NavigationMenu>
-    <div>
-      <span className="h-10 w-10 rounded-full bg-slate-100" />
+const Header = ({ authButton }: { authButton: ReactElement }) => (
+  <header className="sticky top-0 border-b border-border/40 bg-background/95 py-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <div className="container flex w-full items-center justify-between ">
+      <NavigationMenu>
+        <NavigationMenuList>
+          {[
+            { href: "/time" as const, label: "Time" },
+            { href: "/expenses" as const, label: "Expenses" },
+          ].map((item) => (
+            <NavItem key={item.href} {...item} />
+          ))}
+        </NavigationMenuList>
+      </NavigationMenu>
+
+      {authButton}
     </div>
   </header>
 );
