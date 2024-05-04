@@ -14,7 +14,7 @@ export const projectCategory = sqlLiteTable("projectCategory", {
     .primaryKey()
     .$defaultFn(() => crypto.randomUUID()),
   name: text("name").notNull(),
-  project: text("projectId").notNull().references(() => projects.id, { onDelete: "cascade" }),
+  projectId: text("projectId").notNull().references(() => projects.id, { onDelete: "cascade" }),
 })
 
 export const timeEntries = sqlLiteTable("timeEntry", {

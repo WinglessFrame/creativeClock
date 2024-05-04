@@ -5,6 +5,15 @@ import { and, eq, gte, lte, schema } from "@acme/db";
 import { protectedProcedure } from "../trpc";
 
 export const timeEntriesRouter = {
+  getUserCategories: protectedProcedure.query(({ ctx }) => {
+    return ctx.db
+      .select()
+      .from(schema.userToProjects)
+      .leftJoin(schema.projects, eq(schema.userToProjects.projectId, schema.projects.id))
+      .leftJoin(schema.projectCategory, eq(schema.projects.id, schema.projectCategory.project))
+      .where(eq(schema.userToProjects.userId, ctx.session.user.id))
+      .all();
+  }),
   getUserTimeEntries: protectedProcedure
     .input(
       z.object({ from: z.date(), to: z.date() }).refine(({ to, from }) => {
