@@ -57,24 +57,19 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
           GeistMono.variable,
         )}
       >
-        <div className="mx-auto flex min-h-screen max-w-7xl flex-col">
-          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-            <SessionProvider session={session}>
-              <TRPCReactProvider>
-                <Header />
-                <main className="container h-screen py-16">
-                  {props.children}
-                </main>
-              </TRPCReactProvider>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <SessionProvider session={session}>
+            <TRPCReactProvider>
+              <Header authButton={<AuthBtn />} />
+              <main className="container h-screen py-16">{props.children}</main>
+            </TRPCReactProvider>
 
-              <div className="absolute bottom-4 right-4">
-                <AuthBtn />
-                <ThemeToggle />
-              </div>
-              <Toaster />
-            </SessionProvider>
-          </ThemeProvider>
-        </div>
+            <div className="fixed bottom-4 right-4">
+              <ThemeToggle />
+            </div>
+            <Toaster />
+          </SessionProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
