@@ -2,7 +2,6 @@
 
 import { forwardRef } from "react";
 import Link from "next/link";
-// import { signIn } from "@acme/auth";
 import { cn } from "@acme/ui";
 import { Button } from "@acme/ui/button";
 import {
@@ -13,7 +12,6 @@ import {
   navigationMenuTriggerStyle,
 } from "@acme/ui/navigation-menu";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@acme/ui/tabs";
-import { useSession } from "next-auth/react"
 
 export default function HomePage() {
   return (
