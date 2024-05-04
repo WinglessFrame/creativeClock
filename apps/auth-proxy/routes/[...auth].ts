@@ -1,5 +1,7 @@
 import { Auth } from "@auth/core";
+
 import Google from "@auth/core/providers/google";
+
 import { eventHandler, toWebRequest } from "h3";
 
 export default eventHandler(async (event) =>
