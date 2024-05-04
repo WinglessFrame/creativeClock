@@ -1,8 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 
 import { Button } from "@acme/ui/button";
@@ -24,23 +22,9 @@ export default function HomePage() {
     z.infer<typeof formSchema>[] | null
   >(null);
 
-  const [isFormOpen, setIsFormOpen] = useState(false);
   const [currentDay, setCurrentDay] = useState<(typeof daysOfWeek)[number]>(
     daysOfWeek[0]!,
   );
-
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-  });
-
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
-    setCurRecords((cur) => (cur ? cur.concat(values) : [values]));
-    closeForm();
-  };
-
-  const closeForm = () => {
-    setIsFormOpen(false);
-  };
 
   return (
     <Tabs
