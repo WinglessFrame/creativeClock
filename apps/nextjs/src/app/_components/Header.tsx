@@ -13,7 +13,7 @@ import {
 } from "@acme/ui/navigation-menu";
 
 const Header = ({ authButton }: { authButton: ReactElement }) => (
-  <header className="sticky top-0 border-b border-border/40 bg-background/95 py-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+  <header className="sticky top-0 z-10 border-b border-border/40 bg-background/95 py-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
     <div className="container flex w-full items-center justify-between ">
       <NavigationMenu>
         <NavigationMenuList>

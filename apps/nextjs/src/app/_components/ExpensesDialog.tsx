@@ -1,6 +1,6 @@
 "use client";
 
-import { Dispatch, ReactNode, SetStateAction, useMemo, useState } from "react";
+import { ReactNode, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { SubmitHandler, useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
@@ -10,7 +10,6 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -35,70 +34,47 @@ import {
 } from "@acme/ui/select";
 import { Textarea } from "@acme/ui/textarea";
 
-import { api } from "../../trpc/react";
+import formatMoneyInput from "~/utils/formatMoneyInput";
+import DatePicker from "./DatePicker";
 
 const formSchema = z.object({
-  projectId: z.string(),
-  projectCategoryId: z.string(),
-  timeInMinutes: z.number(),
+  date: z.date(),
+  project: z.string(),
+  category: z.string(),
   notes: z.string().optional(),
+  amount: z.string().transform(formatMoneyInput),
+  receipt: z.string().optional(),
 });
 
-const TrackerDialog = ({ children }: { children: ReactNode }) => {
+const ExpensesDialog = ({ children }: { children: ReactNode }) => {
   const [isFormOpen, setIsFormOpen] = useState(false);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-  });
-
-  const createTimeEntry = api.timeEntries.createTimeEntry.useMutation();
-
-  const closeForm = () => {
-    setIsFormOpen(false);
-  };
-
-  const onSubmit: SubmitHandler<z.infer<typeof formSchema>> = (values) => {
-    createTimeEntry.mutate({
+    defaultValues: {
       date: new Date(),
-      notes: values.notes,
-      projectCategoryId: values.projectCategoryId,
-      timeInMinutes: values.timeInMinutes,
-    });
-    closeForm();
-  };
-
-  const selectedCategory = useWatch({
-    control: form.control,
-    name: "projectId",
+    },
   });
 
-  const projectsQuery = api.timeEntries.getUserCategories.useQuery();
-  const createEntryMutation = api.timeEntries.createTimeEntry.useMutation();
-
-  const categories = useMemo(() => {
-    if (projectsQuery.isSuccess) {
-      return projectsQuery.data.find(
-        (project) => project.id === selectedCategory,
-      )?.categories;
-    }
-    return null;
-  }, [projectsQuery.isSuccess, projectsQuery.data, selectedCategory]);
+  const onSubmit: SubmitHandler<z.infer<typeof formSchema>> = (val) => {
+    console.log(val);
+  };
 
   return (
     <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="sm:max-w-[800px]">
         <DialogHeader>
-          <DialogTitle>Track time</DialogTitle>
+          <DialogTitle>Track expenses</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form
-            id="form"
             onSubmit={form.handleSubmit(onSubmit)}
             className="grid items-center gap-4 py-4"
           >
             <FormField
               control={form.control}
-              name="projectId"
+              name="project"
               render={({ field }) => (
                 <FormItem className="grid grid-cols-4 items-center gap-4">
                   <FormLabel className="text-right">Project</FormLabel>
@@ -108,13 +84,9 @@ const TrackerDialog = ({ children }: { children: ReactNode }) => {
                         <SelectValue placeholder="Select project" />
                       </SelectTrigger>
                       <SelectContent>
-                        {projectsQuery.data?.map((item) => (
-                          <SelectItem
-                            key={item.id}
-                            className="ml-2"
-                            value={item.id}
-                          >
-                            {item.name}
+                        {["test", "test2", "test1"].map((item) => (
+                          <SelectItem key={item} className="ml-2" value={item}>
+                            {item}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -125,27 +97,19 @@ const TrackerDialog = ({ children }: { children: ReactNode }) => {
             />
             <FormField
               control={form.control}
-              name="projectCategoryId"
+              name="category"
               render={({ field }) => (
                 <FormItem className="grid grid-cols-4 items-center gap-4">
-                  <Label className="text-right">Task</Label>
+                  <Label className="text-right">Category</Label>
                   <FormControl>
-                    <Select
-                      disabled={!categories || !categories.length}
-                      onValueChange={field.onChange}
-                      value={field.value}
-                    >
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <SelectTrigger className="col-span-3">
-                        <SelectValue placeholder="Select type of task" />
+                        <SelectValue placeholder="Select category" />
                       </SelectTrigger>
                       <SelectContent>
-                        {categories?.map((item) => (
-                          <SelectItem
-                            key={item.id}
-                            className="ml-2"
-                            value={item.id}
-                          >
-                            {item.name}
+                        {["test", "test2", "test1"].map((item) => (
+                          <SelectItem key={item} className="ml-2" value={item}>
+                            {item}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -172,32 +136,66 @@ const TrackerDialog = ({ children }: { children: ReactNode }) => {
             />
             <FormField
               control={form.control}
-              name="timeInMinutes"
+              name="amount"
               render={({ field }) => (
                 <FormItem className="grid grid-cols-4 items-center gap-4">
-                  <Label className="text-right">Time in minutes</Label>
+                  <Label className="text-right">Amount</Label>
                   <FormControl>
                     <Input
                       {...field}
                       value={field.value ?? ""}
                       type="number"
-                      className="col-span-3"
-                      placeholder="0"
+                      placeholder="€"
                     />
                   </FormControl>
                 </FormItem>
               )}
             />
+
+            <FormField
+              control={form.control}
+              name="date"
+              render={({ field }) => (
+                <FormItem className="grid grid-cols-4 items-center gap-4">
+                  <Label className="text-right">Date</Label>
+                  <FormControl>
+                    <DatePicker
+                      date={field.value}
+                      setDate={field.onChange}
+                      className="flex-1"
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="receipt"
+              render={({ field }) => (
+                <FormItem className="grid grid-cols-4 items-center gap-4">
+                  <Label className="text-right">Receipt</Label>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      className="col-span-3"
+                      type="file"
+                      value={field.value ?? ""}
+                      accept="image/png, image/gif, image/jpeg"
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+
+            <Button className="w-60 justify-self-end" type="submit">
+              Submit
+            </Button>
           </form>
         </Form>
-        <DialogFooter>
-          <Button form="form" type="submit">
-            Save changes
-          </Button>
-        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
 };
 
-export default TrackerDialog;
+export default ExpensesDialog;
