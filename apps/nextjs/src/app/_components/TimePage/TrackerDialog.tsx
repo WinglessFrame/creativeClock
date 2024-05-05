@@ -32,8 +32,7 @@ import {
 } from "@acme/ui/select";
 import { Textarea } from "@acme/ui/textarea";
 
-import { api } from "../../trpc/react";
-import { useSelectedDateContext } from "../time/[[...slug]]/page";
+import { api } from "../../../trpc/react";
 
 const formSchema = z.object({
   projectId: z.string(),
@@ -60,7 +59,6 @@ const TrackerDialog = ({ children }: { children: ReactNode }) => {
   const closeForm = () => {
     setIsFormOpen(false);
   };
-  const { weekBoundaries } = useSelectedDateContext();
 
   const onSubmit: SubmitHandler<z.infer<typeof formSchema>> = async (
     values,
@@ -72,10 +70,10 @@ const TrackerDialog = ({ children }: { children: ReactNode }) => {
       projectCategoryId: values.projectCategoryId,
       timeInMinutes: values.timeInMinutes,
     });
-    // timeEntriesQueryCache.invalidate({
-    //   from: weekBoundaries.startDate,
-    //   to: weekBoundaries.endDate,
-    // })
+    /* timeEntriesQueryCache.invalidate({
+       from: currentWeekBoundaries.startDate,
+       to: currentWeekBoundaries.endDate,
+     }) */
     closeForm();
   };
 
