@@ -1,16 +1,23 @@
 "use client";
 
 import { createContext, useContext, useMemo, useState } from "react";
-import { z } from "zod";
+import Link from "next/link";
 
 import { Button } from "@acme/ui/button";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@acme/ui/pagination";
 import { Separator } from "@acme/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@acme/ui/tabs";
 
-import TrackerDialog from "../_components/TrackerDialog";
-import { api } from "../../trpc/react";
-
-const daysOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+import TrackerDialog from "../../_components/TrackerDialog";
+import { api } from "../../../trpc/react";
 
 function getWeekBoundaries(date: Date) {
   // Calculate start date of the week (Monday)
@@ -33,6 +40,14 @@ function getWeekBoundaries(date: Date) {
   endDate.setSeconds(59);
 
   return { startDate, endDate };
+}
+
+function areSameDates(date1: Date, date2: Date) {
+  return (
+    date1.getFullYear() === date2.getFullYear() &&
+    date1.getMonth() === date2.getMonth() &&
+    date1.getDate() === date2.getDate()
+  );
 }
 
 function getWeekDates(startDate: Date, endDate: Date) {
@@ -87,7 +102,7 @@ export const useSelectedDateContext = () => {
   return context;
 };
 
-export default function HomePage() {
+export default function TimePage() {
   const currentWeekBoundaries = useMemo(() => {
     const currentDate = new Date();
     return getWeekBoundaries(currentDate);
@@ -141,10 +156,26 @@ export default function HomePage() {
         weekBoundaries: currentWeekBoundaries,
       }}
     >
-      <h1 className="mb-4 text-3xl font-semibold">
-        {getFullDay(selectedDay.date)}
-      </h1>
-
+      <div className="mb-10 flex items-center gap-4">
+        <Pagination className="m-0 w-fit">
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious className="p-2" href="#" />
+            </PaginationItem>
+            <PaginationItem>
+              <PaginationNext className="p-2" href="#" />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
+        <h1 className="text-3xl font-semibold">
+          {getFullDay(selectedDay.date)}
+        </h1>
+        {!areSameDates(selectedDay.date, new Date()) && (
+          <Link className="underline underline-offset-4" href={"#"}>
+            Return to today
+          </Link>
+        )}
+      </div>
       <Tabs
         defaultValue={currentDayIndex.toString()}
         onValueChange={onTabChange}
