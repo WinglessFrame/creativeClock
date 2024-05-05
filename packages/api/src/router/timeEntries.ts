@@ -7,19 +7,15 @@ import { TRPCError } from "@trpc/server";
 
 export const timeEntriesRouter = {
   getUserCategories: protectedProcedure.query(async ({ ctx }) => {
-    const result = await ctx.db.query.users.findFirst({
+    const result = await ctx.db.query.usersToProjects.findMany({
       with: {
-        userToProjects: {
+        project: {
           with: {
-            project: {
-              with: {
-                categories: true
-              }
-            }
+            categories: true
           }
         }
       },
-      where: eq(schema.users.id, ctx.session.user.id)
+      where: eq(schema.usersToProjects.userId, ctx.session.user.id)
     })
 
     if (!result) {
@@ -29,7 +25,7 @@ export const timeEntriesRouter = {
       })
     }
 
-    return result.userToProjects.map((userToProject) => userToProject.project);
+    return result.map(userToProject => userToProject.project)
   }),
   getUserTimeEntries: protectedProcedure
     .input(
@@ -37,20 +33,34 @@ export const timeEntriesRouter = {
         return to > from;
       }),
     )
-    .query(({ ctx, input }) => {
-      return ctx.db
-        .select()
-        .from(schema.timeEntries)
-        .leftJoin(schema.usersToProjects, eq(schema.timeEntries.projectCategoryId, schema.usersToProjects.projectId))
-        .leftJoin(schema.usersToProjects, eq(schema.timeEntries.projectCategoryId, schema.usersToProjects.projectId))
-        .where(
-          and(
-            eq(schema.timeEntries.userId, ctx.session.user.id),
-            gte(schema.timeEntries.date, input.from),
-            lte(schema.timeEntries.date, input.to),
-          ),
-        )
-        .all();
+    .query(async ({ ctx, input }) => {
+      // return ctx.db
+      //   .select()
+      //   .from(schema.timeEntries)
+      //   .leftJoin(schema.usersToProjects, eq(schema.timeEntries.projectCategoryId, schema.usersToProjects.projectId))
+      //   .leftJoin(schema.usersToProjects, eq(schema.timeEntries.projectCategoryId, schema.usersToProjects.projectId))
+      //   .where(
+      //     and(
+      //       eq(schema.timeEntries.userId, ctx.session.user.id),
+      //       gte(schema.timeEntries.date, input.from),
+      //       lte(schema.timeEntries.date, input.to),
+      //     ),
+      //   )
+      //   .all();
+      return await ctx.db.query.timeEntries.findMany({
+        where: and(
+          eq(schema.timeEntries.userId, ctx.session.user.id),
+          gte(schema.timeEntries.date, input.from),
+          lte(schema.timeEntries.date, input.to),
+        ),
+        with: {
+          projectCategory: {
+            with: {
+              project: true
+            }
+          }
+        }
+      })
     }),
   createTimeEntry: protectedProcedure
     .input(
@@ -67,7 +77,7 @@ export const timeEntriesRouter = {
           ...input,
           userId: ctx.session.user.id,
         },
-      ]);
+      ]).returning();
     }),
 
   deleteTimeEntry: protectedProcedure
