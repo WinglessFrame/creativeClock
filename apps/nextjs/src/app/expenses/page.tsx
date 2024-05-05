@@ -11,7 +11,7 @@ import {
 } from "@acme/ui/table";
 
 import formatMoneyInput from "~/utils/formatMoneyInput";
-import ExpensesDialog from "../_components/ExpensesDialog";
+import ExpensesDialog from "../_components/ExpensesPage/ExpensesDialog";
 import Clip from "../_components/Icons/Clip";
 
 const invoices = [
