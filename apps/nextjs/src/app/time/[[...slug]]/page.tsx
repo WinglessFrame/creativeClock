@@ -1,3 +1,4 @@
+import { Suspense, useMemo } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -9,6 +10,7 @@ import {
   currentWeekBoundaries,
   currentWeekDates,
   getDateSlug,
+  parseDateFromParams,
 } from "~/utils";
 
 function getDayIndex(weekDates: Date[], currentDate: Date) {
@@ -26,15 +28,10 @@ function getFullDay(date: Date) {
   return formatter.format(date);
 }
 
-function parseDateFromParams(params: string[]) {
-  const joinedParams = params.join("/");
-  return joinedParams === "" ? new Date() : new Date(Date.parse(joinedParams));
-}
-
 export default async function TimePage({
   params,
 }: {
-  params: { slug: string[] };
+  params: { slug: string[] | undefined };
 }) {
   const currentWeekEntries = await api.timeEntries.getUserTimeEntries({
     from: currentWeekBoundaries.startDate,
@@ -49,8 +46,8 @@ export default async function TimePage({
     idx: getDayIndex(currentWeekDates, parsedDate),
   };
 
-  const currentDayEntries = currentWeekEntries.filter(
-    (entry) => entry.date.getDay() === selectedDay.date.getDay(),
+  const currentDayEntries = currentWeekEntries.filter((entry) =>
+    areSameDates(entry.date, selectedDay.date),
   );
   const isSelectedACurrentDate = areSameDates(selectedDay.date, new Date());
 

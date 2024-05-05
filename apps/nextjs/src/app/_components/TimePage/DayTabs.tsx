@@ -1,6 +1,7 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useMemo } from "react";
+import { useParams, useRouter } from "next/navigation";
 
 import { RouterOutputs } from "@acme/api";
 import { Button } from "@acme/ui/button";
@@ -13,6 +14,9 @@ import {
   currentWeekDates,
   getDateSlug,
   getShortDay,
+  getWeekBoundaries,
+  getWeekDates,
+  parseDateFromParams,
 } from "~/utils";
 import TrackerDialog from "../../_components/TimePage/TrackerDialog";
 
@@ -27,11 +31,22 @@ const DayTabs = ({
 }) => {
   const router = useRouter();
 
+  const params = useParams() as { slug: string[] };
+
+  const currentWeekDates = useMemo(() => {
+    const parsedDate = parseDateFromParams(params.slug);
+
+    const weekBoundaries = getWeekBoundaries(parsedDate);
+
+    return getWeekDates(weekBoundaries.startDate, weekBoundaries.endDate);
+  }, [params]);
+
   const onTabChange = (newDayIdx: string) => {
     const selectedDate = currentWeekDates[Number(newDayIdx)];
     if (!selectedDate) throw new Error("Invalid day index");
     router.push(`/time/${getDateSlug(selectedDate)}`);
   };
+
   return (
     <Tabs
       onValueChange={onTabChange}
@@ -48,7 +63,7 @@ const DayTabs = ({
             >
               <span>{getShortDay(day)}</span>
               <span className="text-xs">
-                {currentWeekEntriesData?.find((item) =>
+                {currentWeekEntriesData.find((item) =>
                   areSameDates(item.date, day),
                 )?.timeInMinutes
                   ? converMinutesToHours(

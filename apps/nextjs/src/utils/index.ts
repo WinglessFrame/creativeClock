@@ -6,6 +6,10 @@ export function areSameDates(date1: Date, date2: Date) {
   );
 }
 
+export function parseDateFromParams(params: string[] | undefined) {
+  return !params ? new Date() : new Date(Date.parse(params.join("/")));
+}
+
 export function getShortDay(date: Date) {
   const formatter = new Intl.DateTimeFormat("en-US", {
     weekday: "short",
@@ -46,7 +50,7 @@ export const currentWeekDates = getWeekDates(
   currentWeekBoundaries.endDate,
 );
 
-function getWeekDates(startDate: Date, endDate: Date) {
+export function getWeekDates(startDate: Date, endDate: Date) {
   let dates = [];
   let currentDate = new Date(startDate);
 
@@ -58,7 +62,7 @@ function getWeekDates(startDate: Date, endDate: Date) {
   return dates;
 }
 
-function getWeekBoundaries(date: Date) {
+export function getWeekBoundaries(date: Date) {
   // Calculate start date of the week (Monday)
   let startDate = new Date(date);
   startDate.setDate(date.getDate() - ((date.getDay() + 6) % 7));
