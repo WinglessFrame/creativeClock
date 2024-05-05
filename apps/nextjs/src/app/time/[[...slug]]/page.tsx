@@ -7,9 +7,9 @@ import DayTabs from "~/app/_components/TimePage/DayTabs";
 import { api } from "~/trpc/server";
 import {
   areSameDates,
-  currentWeekBoundaries,
-  currentWeekDates,
   getDateSlug,
+  getWeekBoundaries,
+  getWeekDates,
   parseDateFromParams,
 } from "~/utils";
 
@@ -33,14 +33,21 @@ export default async function TimePage({
 }: {
   params: { slug: string[] | undefined };
 }) {
+  const parsedDate = parseDateFromParams(params.slug);
+  if (!parsedDate) notFound();
+
+  const currentWeekBoundaries = getWeekBoundaries(parsedDate);
+
+  const currentWeekDates = getWeekDates(
+    currentWeekBoundaries.startDate,
+    currentWeekBoundaries.endDate,
+  );
+
   const currentWeekEntries = await api.timeEntries.getUserTimeEntries({
     from: currentWeekBoundaries.startDate,
     to: currentWeekBoundaries.endDate,
   });
 
-  const parsedDate = parseDateFromParams(params.slug);
-
-  if (!parsedDate) notFound();
   const selectedDay = {
     date: parsedDate,
     idx: getDayIndex(currentWeekDates, parsedDate),

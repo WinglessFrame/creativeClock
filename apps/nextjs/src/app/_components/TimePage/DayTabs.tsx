@@ -11,7 +11,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@acme/ui/tabs";
 import {
   areSameDates,
   converMinutesToHours,
-  currentWeekDates,
   getDateSlug,
   getShortDay,
   getWeekBoundaries,
@@ -36,10 +35,14 @@ const DayTabs = ({
   const currentWeekDates = useMemo(() => {
     const parsedDate = parseDateFromParams(params.slug);
 
-    const weekBoundaries = getWeekBoundaries(parsedDate);
+    if (parsedDate) {
+      const weekBoundaries = getWeekBoundaries(parsedDate);
 
-    return getWeekDates(weekBoundaries.startDate, weekBoundaries.endDate);
+      return getWeekDates(weekBoundaries.startDate, weekBoundaries.endDate);
+    }
   }, [params]);
+
+  if (!currentWeekDates) return null;
 
   const onTabChange = (newDayIdx: string) => {
     const selectedDate = currentWeekDates[Number(newDayIdx)];

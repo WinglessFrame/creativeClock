@@ -7,7 +7,10 @@ export function areSameDates(date1: Date, date2: Date) {
 }
 
 export function parseDateFromParams(params: string[] | undefined) {
-  return !params ? new Date() : new Date(Date.parse(params.join("/")));
+  if (!params) return new Date();
+
+  const parsedDate = new Date(Date.parse(params.join("/")));
+  if (!isNaN(parsedDate.getTime())) return parsedDate;
 }
 
 export function getShortDay(date: Date) {
@@ -40,15 +43,9 @@ export const converMinutesToHours = (totalMinutes: number) => {
   return `${padToTwoDigits(hours)}:${padToTwoDigits(minutes)}`;
 };
 
-export const currentWeekBoundaries = getWeekBoundaries(new Date());
-
 function padToTwoDigits(num: number) {
   return num.toString().padStart(2, "0");
 }
-export const currentWeekDates = getWeekDates(
-  currentWeekBoundaries.startDate,
-  currentWeekBoundaries.endDate,
-);
 
 export function getWeekDates(startDate: Date, endDate: Date) {
   let dates = [];
