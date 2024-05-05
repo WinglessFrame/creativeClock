@@ -183,7 +183,7 @@ export default function HomePage() {
           value={selectedDay.idx.toString()}
           className="relative rounded-md border"
         >
-          {currentDayEntries ? (
+          {currentDayEntries?.length ? (
             <div className="flex flex-col gap-4">
               <ul className="flex flex-col">
                 {currentDayEntries.map((item) => (
