@@ -1,3 +1,5 @@
+import { cn } from "@acme/ui";
+import { buttonVariants } from "@acme/ui/button";
 import {
   Pagination,
   PaginationContent,
@@ -14,13 +16,13 @@ const DayPagination = ({ selectedDate }: { selectedDate: Date }) => {
       <PaginationContent>
         <PaginationItem>
           <PaginationPrevious
-            className="p-2"
+            className={cn(buttonVariants({ variant: "outline" }), "p-2")}
             href={`/time/${getDateSlug(getPrevDay(selectedDate))}`}
           />
         </PaginationItem>
         <PaginationItem>
           <PaginationNext
-            className="p-2"
+            className={cn(buttonVariants({ variant: "outline" }), "p-2")}
             href={`/time/${getDateSlug(getNextDay(selectedDate))}`}
           />
         </PaginationItem>
