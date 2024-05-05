@@ -10,12 +10,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@acme/ui/tabs";
 import TrackerDialog from "../_components/TrackerDialog";
 import { api } from "../../trpc/react";
 
-const formSchema = z.object({
-  project: z.string(),
-  task: z.string(),
-  notes: z.string().optional(),
-});
-
 const daysOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 function getWeekBoundaries(date: Date) {
