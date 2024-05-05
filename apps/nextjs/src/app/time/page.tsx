@@ -18,11 +18,10 @@ const formSchema = z.object({
 
 const daysOfWeek = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-
 function getWeekBoundaries(date: Date) {
   // Calculate start date of the week (Monday)
   let startDate = new Date(date);
-  startDate.setDate(date.getDate() - (date.getDay() + 6) % 7);
+  startDate.setDate(date.getDate() - ((date.getDay() + 6) % 7));
 
   // Set hours, minutes, seconds, and milliseconds to 0
   startDate.setHours(0);
@@ -56,24 +55,22 @@ function getWeekDates(startDate: Date, endDate: Date) {
 
 function getDayIndex(weekDates: Date[], currentDate: Date) {
   const currentDay = currentDate.getDay();
-  const dayIndex = weekDates.findIndex(date => date.getDay() === currentDay);
+  const dayIndex = weekDates.findIndex((date) => date.getDay() === currentDay);
   return dayIndex;
 }
 
 function getShortDay(date: Date) {
-  const formatter = new Intl.DateTimeFormat('en-US', {
-    weekday: 'short',
+  const formatter = new Intl.DateTimeFormat("en-US", {
+    weekday: "short",
   });
   return formatter.format(date);
 }
 
-
 function getFullDay(date: Date) {
-  const formatter = new Intl.DateTimeFormat('en-US', {
-    weekday: 'short',
-    day: 'numeric',
-    month: 'short',
-
+  const formatter = new Intl.DateTimeFormat("en-US", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
   });
   return formatter.format(date);
 }
@@ -81,61 +78,79 @@ function getFullDay(date: Date) {
 type SelectedDateContextValue = {
   selectedDate: Date;
   weekBoundaries: { startDate: Date; endDate: Date };
-}
-const selectedDateContext = createContext<SelectedDateContextValue | null>(null)
+};
+const selectedDateContext = createContext<SelectedDateContextValue | null>(
+  null,
+);
 
 export const useSelectedDateContext = () => {
   const context = useContext(selectedDateContext);
   if (!context) {
-    throw new Error('useSelectedDateContext must be used within a SelectedDateProvider')
+    throw new Error(
+      "useSelectedDateContext must be used within a SelectedDateProvider",
+    );
   }
-  return context
-}
+  return context;
+};
 
 export default function HomePage() {
   const currentWeekBoundaries = useMemo(() => {
     const currentDate = new Date();
     return getWeekBoundaries(currentDate);
-  }, [])
+  }, []);
 
   const currentWeekDates = useMemo(() => {
-    return getWeekDates(currentWeekBoundaries.startDate, currentWeekBoundaries.endDate);
-  }, [])
+    return getWeekDates(
+      currentWeekBoundaries.startDate,
+      currentWeekBoundaries.endDate,
+    );
+  }, []);
 
   const currentWeekEntriesQuery = api.timeEntries.getUserTimeEntries.useQuery({
     from: currentWeekBoundaries.startDate,
     to: currentWeekBoundaries.endDate,
-  })
-
-  const [selectedDay, setSelectedDay] = useState<{ date: Date, idx: number }>(() => {
-    const today = new Date();
-    return {
-      date: today,
-      idx: getDayIndex(currentWeekDates, today)
-    }
   });
 
+  const [selectedDay, setSelectedDay] = useState<{ date: Date; idx: number }>(
+    () => {
+      const today = new Date();
+      return {
+        date: today,
+        idx: getDayIndex(currentWeekDates, today),
+      };
+    },
+  );
+
   const currentDayEntries = useMemo(() => {
-    const entries = currentWeekEntriesQuery.data?.filter(entry => entry.date.getDay() === selectedDay.date.getDay())
-    return entries
-  }, [selectedDay.date, currentWeekEntriesQuery])
+    const entries = currentWeekEntriesQuery.data?.filter(
+      (entry) => entry.date.getDay() === selectedDay.date.getDay(),
+    );
+    return entries;
+  }, [selectedDay.date, currentWeekEntriesQuery]);
 
   const currentDayIndex = useMemo(() => {
     return getDayIndex(currentWeekDates, new Date());
-  }, [])
+  }, []);
 
   const onTabChange = (newDayIdx: string) => {
     const selectedDate = currentWeekDates[Number(newDayIdx)];
     if (!selectedDate) {
-      throw new Error('Invalid day index');
+      throw new Error("Invalid day index");
     }
     setSelectedDay({ date: selectedDate, idx: Number(newDayIdx) });
-  }
+  };
 
   return (
-    <>
-      <h1 className="mb-4 text-3xl font-semibold">{getFullDay(selectedDay.date)}</h1>
-      <selectedDateContext.Provider value={{ selectedDate: selectedDay.date, weekBoundaries: currentWeekBoundaries }} />
+    <selectedDateContext.Provider
+      value={{
+        selectedDate: selectedDay.date,
+        weekBoundaries: currentWeekBoundaries,
+      }}
+    >
+      <h1 className="mb-4 text-3xl font-semibold">
+        {getFullDay(selectedDay.date)}
+      </h1>
+
       <Tabs
         defaultValue={currentDayIndex.toString()}
         onValueChange={onTabChange}
@@ -164,7 +179,10 @@ export default function HomePage() {
             </TabsTrigger>
           </TabsList>
         </div>
-        <TabsContent value={selectedDay.idx.toString()} className="relative rounded-md border">
+        <TabsContent
+          value={selectedDay.idx.toString()}
+          className="relative rounded-md border"
+        >
           {currentDayEntries ? (
             <div className="flex flex-col gap-4">
               <ul className="flex flex-col">
@@ -172,8 +190,12 @@ export default function HomePage() {
                   <li>
                     <div className="flex justify-between p-4">
                       <div className="flex flex-col gap-1">
-                        <span className="font-bold">{item.projectCategory.name}</span>
-                        <span className="text-sm">{item.projectCategory.project.name}</span>
+                        <span className="font-bold">
+                          {item.projectCategory.name}
+                        </span>
+                        <span className="text-sm">
+                          {item.projectCategory.project.name}
+                        </span>
                         <span className="text-xs">{item.notes}</span>
                       </div>
                       <div className="flex items-center gap-4">
@@ -185,7 +207,7 @@ export default function HomePage() {
                   </li>
                 ))}
               </ul>
-              <TrackerDialog >
+              <TrackerDialog>
                 <Button
                   className="mx-auto mb-4 h-12 w-full max-w-44 text-3xl"
                   variant="outline"
@@ -207,6 +229,6 @@ export default function HomePage() {
           )}
         </TabsContent>
       </Tabs>
-    </>
+    </selectedDateContext.Provider>
   );
 }

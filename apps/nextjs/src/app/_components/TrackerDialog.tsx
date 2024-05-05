@@ -1,6 +1,13 @@
 "use client";
 
-import { createContext, Dispatch, ReactNode, SetStateAction, useMemo, useState } from "react";
+import {
+  createContext,
+  Dispatch,
+  ReactNode,
+  SetStateAction,
+  useMemo,
+  useState,
+} from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { SubmitHandler, useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
@@ -36,10 +43,7 @@ import {
 import { Textarea } from "@acme/ui/textarea";
 
 import { api } from "../../trpc/react";
-
-import { Input } from "@acme/ui/input";
 import { useSelectedDateContext } from "../time/page";
-
 
 const formSchema = z.object({
   projectId: z.string(),
@@ -53,31 +57,31 @@ const TrackerDialog = ({ children }: { children: ReactNode }) => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      projectId: '',
-      notes: '',
-      projectCategoryId: '',
+      projectId: "",
+      notes: "",
+      projectCategoryId: "",
       timeInMinutes: 0,
-    }
+    },
   });
 
-
-  const createTimeEntry = api.timeEntries.createTimeEntry.useMutation()
-  const timeEntriesQueryCache = api.useUtils().timeEntries.getUserTimeEntries
+  const createTimeEntry = api.timeEntries.createTimeEntry.useMutation();
+  const timeEntriesQueryCache = api.useUtils().timeEntries.getUserTimeEntries;
 
   const closeForm = () => {
     setIsFormOpen(false);
   };
-  const { weekBoundaries } = useSelectedDateContext()
+  const { weekBoundaries } = useSelectedDateContext();
 
-  const onSubmit: SubmitHandler<z.infer<typeof formSchema>> = async (values) => {
+  const onSubmit: SubmitHandler<z.infer<typeof formSchema>> = async (
+    values,
+  ) => {
     console.log(values);
     const result = await createTimeEntry.mutateAsync({
       date: new Date(),
       notes: values.notes,
       projectCategoryId: values.projectCategoryId,
       timeInMinutes: values.timeInMinutes,
-
-    })
+    });
     // timeEntriesQueryCache.invalidate({
     //   from: weekBoundaries.startDate,
     //   to: weekBoundaries.endDate,
@@ -105,10 +109,7 @@ const TrackerDialog = ({ children }: { children: ReactNode }) => {
     <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="sm:max-w-[800px]">
-
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-        >
+        <form onSubmit={form.handleSubmit(onSubmit)}>
           <DialogHeader>
             <DialogTitle>Track time</DialogTitle>
           </DialogHeader>
@@ -124,22 +125,23 @@ const TrackerDialog = ({ children }: { children: ReactNode }) => {
                   <FormItem className="grid grid-cols-4 items-center gap-4">
                     <FormLabel className="text-right">Project</FormLabel>
                     <FormControl>
-                      <Select onValueChange={field.onChange} value={field.value}>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
                         <SelectTrigger className="col-span-3">
                           <SelectValue placeholder="Select type of task" />
                         </SelectTrigger>
                         <SelectContent>
-                          {projectsQuery.data?.map(
-                            (item) => (
-                              <SelectItem
-                                key={item.id}
-                                className="ml-2"
-                                value={item.id}
-                              >
-                                {item.name}
-                              </SelectItem>
-                            ),
-                          )}
+                          {projectsQuery.data?.map((item) => (
+                            <SelectItem
+                              key={item.id}
+                              className="ml-2"
+                              value={item.id}
+                            >
+                              {item.name}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     </FormControl>
@@ -153,22 +155,24 @@ const TrackerDialog = ({ children }: { children: ReactNode }) => {
                   <FormItem className="grid grid-cols-4 items-center gap-4">
                     <Label className="text-right">Task</Label>
                     <FormControl>
-                      <Select disabled={!categories || !categories.length} onValueChange={field.onChange} value={field.value}>
+                      <Select
+                        disabled={!categories || !categories.length}
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
                         <SelectTrigger className="col-span-3">
                           <SelectValue placeholder="Select type of task" />
                         </SelectTrigger>
                         <SelectContent>
-                          {categories?.map(
-                            (item) => (
-                              <SelectItem
-                                key={item.id}
-                                className="ml-2"
-                                value={item.id}
-                              >
-                                {item.name}
-                              </SelectItem>
-                            ),
-                          )}
+                          {categories?.map((item) => (
+                            <SelectItem
+                              key={item.id}
+                              className="ml-2"
+                              value={item.id}
+                            >
+                              {item.name}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     </FormControl>
