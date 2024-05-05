@@ -2,7 +2,7 @@
 
 import { createContext, Dispatch, ReactNode, SetStateAction, useMemo, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, useWatch, SubmitHandler } from "react-hook-form";
+import { SubmitHandler, useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 
 import { Button } from "@acme/ui/button";
@@ -22,6 +22,7 @@ import {
   FormItem,
   FormLabel,
 } from "@acme/ui/form";
+import { Input } from "@acme/ui/input";
 import { Label } from "@acme/ui/label";
 import {
   Select,
@@ -33,9 +34,12 @@ import {
   SelectValue,
 } from "@acme/ui/select";
 import { Textarea } from "@acme/ui/textarea";
+
 import { api } from "../../trpc/react";
+
 import { Input } from "@acme/ui/input";
 import { useSelectedDateContext } from "../time/page";
+
 
 const formSchema = z.object({
   projectId: z.string(),
@@ -44,11 +48,7 @@ const formSchema = z.object({
   notes: z.string().optional(),
 });
 
-const TrackerDialog = ({
-  children,
-}: {
-  children: ReactNode;
-}) => {
+const TrackerDialog = ({ children }: { children: ReactNode }) => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -59,6 +59,7 @@ const TrackerDialog = ({
       timeInMinutes: 0,
     }
   });
+
 
   const createTimeEntry = api.timeEntries.createTimeEntry.useMutation()
   const timeEntriesQueryCache = api.useUtils().timeEntries.getUserTimeEntries
@@ -75,6 +76,7 @@ const TrackerDialog = ({
       notes: values.notes,
       projectCategoryId: values.projectCategoryId,
       timeInMinutes: values.timeInMinutes,
+
     })
     // timeEntriesQueryCache.invalidate({
     //   from: weekBoundaries.startDate,
@@ -83,31 +85,32 @@ const TrackerDialog = ({
     closeForm();
   };
 
-
-  const selectedCategory = useWatch({ control: form.control, name: 'projectId' })
+  const selectedCategory = useWatch({
+    control: form.control,
+    name: "projectId",
+  });
 
   const projectsQuery = api.timeEntries.getUserCategories.useQuery();
 
   const categories = useMemo(() => {
     if (projectsQuery.isSuccess) {
-      return projectsQuery.data.find(project => project.id === selectedCategory)?.categories
+      return projectsQuery.data.find(
+        (project) => project.id === selectedCategory,
+      )?.categories;
     }
-    return null
-  }, [projectsQuery.isSuccess, projectsQuery.data, selectedCategory])
-
+    return null;
+  }, [projectsQuery.isSuccess, projectsQuery.data, selectedCategory]);
 
   return (
     <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="sm:max-w-[800px]">
+
         <form
           onSubmit={form.handleSubmit(onSubmit)}
         >
           <DialogHeader>
             <DialogTitle>Track time</DialogTitle>
-            <DialogDescription>
-              Make changes to your profile here. Click save when you're done.
-            </DialogDescription>
           </DialogHeader>
           <Form {...form}>
             <div
