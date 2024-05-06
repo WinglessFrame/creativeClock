@@ -7,7 +7,9 @@ import {
   useMemo,
   useState,
 } from "react";
+
 import { TimeBoundaries } from "@acme/api";
+
 import { getDayIndex, getWeekBoundaries, getWeekDates } from "../../../utils";
 
 type TimeContextType = {
@@ -26,12 +28,9 @@ export const useTimeContext = () => {
   return context;
 };
 
-const getDayInTheWeekEntry = (date: Date) => {
+export const getDayInTheWeekEntry = (date: Date) => {
   const weekBoundaries = getWeekBoundaries(date);
-  const weekDates = getWeekDates(
-    weekBoundaries.from,
-    weekBoundaries.to,
-  );
+  const weekDates = getWeekDates(weekBoundaries.from, weekBoundaries.to);
   const idxWithinTheWeek = getDayIndex(weekDates, date);
   return idxWithinTheWeek;
 };

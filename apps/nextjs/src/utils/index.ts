@@ -23,7 +23,7 @@ export function getShortDay(date: Date) {
 }
 
 export function getDateSlug(date: Date) {
-  return `/${new Intl.DateTimeFormat("en-US").format(date)}`;
+  return `${new Intl.DateTimeFormat("en-US").format(date)}`;
 }
 
 export function getPrevDay(date: Date) {
