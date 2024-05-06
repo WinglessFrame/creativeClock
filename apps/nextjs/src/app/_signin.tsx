@@ -26,7 +26,7 @@ export const AuthBtn = async () => {
       fallback={
         session.user.name
           ?.split(" ")
-          .map((namePart) => namePart.toUpperCase())
+          .map((namePart) => namePart.at(0)?.toUpperCase())
           .join("") ?? ""
       }
     />

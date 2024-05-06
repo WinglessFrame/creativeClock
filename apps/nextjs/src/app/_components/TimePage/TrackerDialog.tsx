@@ -33,6 +33,7 @@ import {
 import { Textarea } from "@acme/ui/textarea";
 
 import { api } from "../../../trpc/react";
+import { useRouter } from "next/navigation";
 
 const formSchema = z.object({
   projectId: z.string(),
@@ -41,7 +42,7 @@ const formSchema = z.object({
   notes: z.string().optional(),
 });
 
-const TrackerDialog = ({ children }: { children: ReactNode }) => {
+const TrackerDialog = ({ children, day }: { children: ReactNode, day: Date }) => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -55,7 +56,7 @@ const TrackerDialog = ({ children }: { children: ReactNode }) => {
 
   const createTimeEntry = api.timeEntries.createTimeEntry.useMutation();
   const timeEntriesQueryCache = api.useUtils().timeEntries.getUserTimeEntries;
-
+  const router = useRouter()
   const closeForm = () => {
     setIsFormOpen(false);
   };
@@ -63,17 +64,13 @@ const TrackerDialog = ({ children }: { children: ReactNode }) => {
   const onSubmit: SubmitHandler<z.infer<typeof formSchema>> = async (
     values,
   ) => {
-    console.log(values);
-    const result = await createTimeEntry.mutateAsync({
-      date: new Date(),
+    await createTimeEntry.mutateAsync({
+      date: day,
       notes: values.notes,
       projectCategoryId: values.projectCategoryId,
       timeInMinutes: values.timeInMinutes,
     });
-    /* timeEntriesQueryCache.invalidate({
-       from: currentWeekBoundaries.startDate,
-       to: currentWeekBoundaries.endDate,
-     }) */
+    router.refresh()
     closeForm();
   };
 

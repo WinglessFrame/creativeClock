@@ -9,10 +9,9 @@ import {
   TableHeader,
   TableRow,
 } from "@acme/ui/table";
-
+import { PaperClipIcon } from "@heroicons/react/24/solid"
 import formatMoneyInput from "~/utils/formatMoneyInput";
 import ExpensesDialog from "../_components/ExpensesPage/ExpensesDialog";
-import Clip from "../_components/Icons/Clip";
 
 const invoices = [
   {
@@ -84,7 +83,7 @@ export default function ExpensesPage() {
                     <div className="flex items-center justify-end gap-4">
                       {invoice.receipt && (
                         <Button>
-                          <Clip className="w-4" />
+                          <PaperClipIcon className="w-4" />
                         </Button>
                       )}
                       <ExpensesDialog>
@@ -134,7 +133,7 @@ export default function ExpensesPage() {
                     <div className="flex items-center justify-end gap-4">
                       {invoice.receipt && (
                         <Button>
-                          <Clip className="w-4" />
+                          <PaperClipIcon className="w-4" />
                         </Button>
                       )}
                       <ExpensesDialog>
@@ -184,7 +183,7 @@ export default function ExpensesPage() {
                     <div className="flex items-center justify-end gap-4">
                       {invoice.receipt && (
                         <Button>
-                          <Clip className="w-4" />
+                          <PaperClipIcon className="w-4" />
                         </Button>
                       )}
                       <ExpensesDialog>
@@ -234,7 +233,7 @@ export default function ExpensesPage() {
                     <div className="flex items-center justify-end gap-4">
                       {invoice.receipt && (
                         <Button>
-                          <Clip className="w-4" />
+                          <PaperClipIcon className="w-4" />
                         </Button>
                       )}
                       <ExpensesDialog>

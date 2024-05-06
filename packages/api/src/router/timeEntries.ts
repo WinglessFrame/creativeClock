@@ -34,19 +34,6 @@ export const timeEntriesRouter = {
       }),
     )
     .query(async ({ ctx, input }) => {
-      // return ctx.db
-      //   .select()
-      //   .from(schema.timeEntries)
-      //   .leftJoin(schema.usersToProjects, eq(schema.timeEntries.projectCategoryId, schema.usersToProjects.projectId))
-      //   .leftJoin(schema.usersToProjects, eq(schema.timeEntries.projectCategoryId, schema.usersToProjects.projectId))
-      //   .where(
-      //     and(
-      //       eq(schema.timeEntries.userId, ctx.session.user.id),
-      //       gte(schema.timeEntries.date, input.from),
-      //       lte(schema.timeEntries.date, input.to),
-      //     ),
-      //   )
-      //   .all();
       return await ctx.db.query.timeEntries.findMany({
         where: and(
           eq(schema.timeEntries.userId, ctx.session.user.id),
@@ -81,11 +68,11 @@ export const timeEntriesRouter = {
     }),
 
   deleteTimeEntry: protectedProcedure
-    .input(z.string())
+    .input(z.object({ id: z.string() }))
     .mutation(({ ctx, input }) => {
       return ctx.db
         .delete(schema.timeEntries)
-        .where(eq(schema.timeEntries.id, input))
+        .where(eq(schema.timeEntries.id, input.id))
         .returning();
     }),
 };

@@ -1,8 +1,9 @@
 "use client";
 
-import { useMemo } from "react";
+import { useCallback, useEffect, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
-
+import { PencilIcon } from "@heroicons/react/24/solid";
+import { TrashIcon } from "@heroicons/react/24/solid";
 import { RouterOutputs } from "@acme/api";
 import { Button } from "@acme/ui/button";
 import { Separator } from "@acme/ui/separator";
@@ -10,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@acme/ui/tabs";
 
 import {
   areSameDates,
-  converMinutesToHours,
+  convertMinutesToHours,
   getDateSlug,
   getShortDay,
   getWeekBoundaries,
@@ -18,19 +19,26 @@ import {
   parseDateFromParams,
 } from "~/utils";
 import TrackerDialog from "../../_components/TimePage/TrackerDialog";
+import { api } from "../../../trpc/react";
+import { toast } from "@acme/ui/toast";
 
 const DayTabs = ({
   currentWeekEntriesData,
   currentDayEntries,
   selectedDayIdx,
+  selectedDay,
+  currentWeekBoundaries,
 }: {
   currentWeekEntriesData: RouterOutputs["timeEntries"]["getUserTimeEntries"];
   currentDayEntries: RouterOutputs["timeEntries"]["getUserTimeEntries"];
+  currentWeekBoundaries: { startDate: Date; endDate: Date };
   selectedDayIdx: number;
+  selectedDay: Date;
 }) => {
   const router = useRouter();
 
   const params = useParams() as { slug: string[] };
+
 
   const currentWeekDates = useMemo(() => {
     const parsedDate = parseDateFromParams(params.slug);
@@ -42,6 +50,9 @@ const DayTabs = ({
     }
   }, [params]);
 
+  const deleteTimeEntryMutation = api.timeEntries.deleteTimeEntry.useMutation();
+  const getUserEntriesCache = api.useUtils().timeEntries.getUserTimeEntries;
+
   if (!currentWeekDates) return null;
 
   const onTabChange = (newDayIdx: string) => {
@@ -49,6 +60,22 @@ const DayTabs = ({
     if (!selectedDate) throw new Error("Invalid day index");
     router.push(`/time/${getDateSlug(selectedDate)}`);
   };
+
+  const deleteEntry = async (item: RouterOutputs["timeEntries"]["getUserTimeEntries"][number]) => {
+    try {
+
+      deleteTimeEntryMutation.mutateAsync({ id: item.id })
+      router.refresh()
+      // getUserEntriesCache.setData({ from: currentWeekBoundaries.startDate, to: currentWeekBoundaries.endDate }, (prev) => {
+      //   console.log({ prev })
+      //   if (prev) {
+      //     return prev.filter((entry) => entry.id !== item.id)
+      //   }
+      // })
+    } catch {
+      toast.error("Failed to delete entry")
+    }
+  }
 
   return (
     <Tabs
@@ -69,11 +96,11 @@ const DayTabs = ({
                 {currentWeekEntriesData.find((item) =>
                   areSameDates(item.date, day),
                 )?.timeInMinutes
-                  ? converMinutesToHours(
-                      currentWeekEntriesData.find((item) =>
-                        areSameDates(item.date, day),
-                      )!.timeInMinutes!,
-                    )
+                  ? convertMinutesToHours(
+                    currentWeekEntriesData.find((item) =>
+                      areSameDates(item.date, day),
+                    )!.timeInMinutes!,
+                  )
                   : "00:00"}
               </span>
             </TabsTrigger>
@@ -86,11 +113,11 @@ const DayTabs = ({
             <span>{"Week total"}</span>
             <span className="text-xs">
               {currentWeekEntriesData
-                ? converMinutesToHours(
-                    currentWeekEntriesData
-                      .map((item) => item.timeInMinutes)
-                      .reduce((prev, cur) => prev + cur, 0),
-                  )
+                ? convertMinutesToHours(
+                  currentWeekEntriesData
+                    .map((item) => item.timeInMinutes)
+                    .reduce((prev, cur) => prev + cur, 0),
+                )
                 : "00:00"}
             </span>
           </TabsTrigger>
@@ -116,15 +143,16 @@ const DayTabs = ({
                       <span className="text-xs">{item.notes}</span>
                     </div>
                     <div className="flex items-center gap-4">
-                      <span>0:00</span>
-                      <Button>Edit</Button>
+                      <span>{convertMinutesToHours(item.timeInMinutes)}</span>
+                      <Button size="icon"><PencilIcon className="size-4" /></Button>
+                      <Button onClick={() => deleteEntry(item)} size="icon" variant="destructive"><TrashIcon className="size-4" /></Button>
                     </div>
                   </div>
                   <Separator />
                 </li>
               ))}
             </ul>
-            <TrackerDialog>
+            <TrackerDialog day={selectedDay}>
               <Button
                 className="mx-auto mb-4 h-12 w-full max-w-44 text-3xl"
                 variant="outline"
@@ -134,7 +162,7 @@ const DayTabs = ({
             </TrackerDialog>
           </div>
         ) : (
-          <TrackerDialog>
+          <TrackerDialog day={selectedDay}>
             <Button
               className="flex h-80 w-full flex-col gap-4"
               variant="outline"

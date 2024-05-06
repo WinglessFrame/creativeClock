@@ -36,7 +36,7 @@ export function getNextDay(date: Date) {
   return nextDay;
 }
 
-export const converMinutesToHours = (totalMinutes: number) => {
+export const convertMinutesToHours = (totalMinutes: number) => {
   const hours = Math.floor(totalMinutes / 60);
   const minutes = totalMinutes % 60;
 

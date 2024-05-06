@@ -81,6 +81,8 @@ export default async function TimePage({
         currentWeekEntriesData={currentWeekEntries}
         currentDayEntries={currentDayEntries}
         selectedDayIdx={selectedDay.idx}
+        selectedDay={selectedDay.date}
+        currentWeekBoundaries={currentWeekBoundaries}
       />
     </>
   );
