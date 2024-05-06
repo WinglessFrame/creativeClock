@@ -8,25 +8,13 @@ import { api } from "~/trpc/server";
 import {
   areSameDates,
   getDateSlug,
+  getDayIndex,
   getWeekBoundaries,
   getWeekDates,
   parseDateFromParams,
 } from "~/utils";
-
-function getDayIndex(weekDates: Date[], currentDate: Date) {
-  const currentDay = currentDate.getDay();
-  const dayIndex = weekDates.findIndex((date) => date.getDay() === currentDay);
-  return dayIndex;
-}
-
-function getFullDay(date: Date) {
-  const formatter = new Intl.DateTimeFormat("en-US", {
-    weekday: "short",
-    day: "numeric",
-    month: "short",
-  });
-  return formatter.format(date);
-}
+import { TimeContextProvider } from "../../_components/TimePage/timeContext.client";
+import { CurrentDayLink } from "./currentDayLink.client";
 
 export default async function TimePage({
   params,
@@ -38,52 +26,18 @@ export default async function TimePage({
 
   const currentWeekBoundaries = getWeekBoundaries(parsedDate);
 
-  const currentWeekDates = getWeekDates(
-    currentWeekBoundaries.startDate,
-    currentWeekBoundaries.endDate,
-  );
+  const currentWeekEntries = await api.timeEntries.getUserTimeEntries(currentWeekBoundaries);
 
-  const currentWeekEntries = await api.timeEntries.getUserTimeEntries({
-    from: currentWeekBoundaries.startDate,
-    to: currentWeekBoundaries.endDate,
-  });
-
-  const selectedDay = {
-    date: parsedDate,
-    idx: getDayIndex(currentWeekDates, parsedDate),
-  };
-
-  const currentDayEntries = currentWeekEntries.filter((entry) =>
-    areSameDates(entry.date, selectedDay.date),
-  );
-  const isSelectedACurrentDate = areSameDates(selectedDay.date, new Date());
 
   return (
-    <>
+    <TimeContextProvider initialDate={parsedDate}>
       <div className="mb-10 flex items-center gap-4">
-        <DayPagination selectedDate={selectedDay.date} />
-        <h1 className={"text-3xl font-semibold"}>
-          {isSelectedACurrentDate && (
-            <span className="font-extrabold">Today: </span>
-          )}
-          {getFullDay(selectedDay.date)}
-        </h1>
-        {!isSelectedACurrentDate && (
-          <Link
-            className="underline underline-offset-4"
-            href={`/time/${getDateSlug(new Date())}`}
-          >
-            Return to today
-          </Link>
-        )}
+        <DayPagination />
+        <CurrentDayLink />
       </div>
       <DayTabs
-        currentWeekEntriesData={currentWeekEntries}
-        currentDayEntries={currentDayEntries}
-        selectedDayIdx={selectedDay.idx}
-        selectedDay={selectedDay.date}
-        currentWeekBoundaries={currentWeekBoundaries}
+        initialWeekEntriesData={currentWeekEntries}
       />
-    </>
+    </TimeContextProvider>
   );
 }

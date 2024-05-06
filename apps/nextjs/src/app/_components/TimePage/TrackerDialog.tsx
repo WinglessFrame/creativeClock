@@ -34,6 +34,7 @@ import { Textarea } from "@acme/ui/textarea";
 
 import { api } from "../../../trpc/react";
 import { useRouter } from "next/navigation";
+import { useTimeContext } from "./timeContext.client";
 
 const formSchema = z.object({
   projectId: z.string(),
@@ -42,8 +43,9 @@ const formSchema = z.object({
   notes: z.string().optional(),
 });
 
-const TrackerDialog = ({ children, day }: { children: ReactNode, day: Date }) => {
+const TrackerDialog = ({ children }: { children: ReactNode, }) => {
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const { selectedDate, weekBoundaries } = useTimeContext()
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -56,6 +58,7 @@ const TrackerDialog = ({ children, day }: { children: ReactNode, day: Date }) =>
 
   const createTimeEntry = api.timeEntries.createTimeEntry.useMutation();
   const timeEntriesQueryCache = api.useUtils().timeEntries.getUserTimeEntries;
+
   const router = useRouter()
   const closeForm = () => {
     setIsFormOpen(false);
@@ -65,12 +68,12 @@ const TrackerDialog = ({ children, day }: { children: ReactNode, day: Date }) =>
     values,
   ) => {
     await createTimeEntry.mutateAsync({
-      date: day,
+      date: selectedDate.date,
       notes: values.notes,
       projectCategoryId: values.projectCategoryId,
       timeInMinutes: values.timeInMinutes,
     });
-    router.refresh()
+    timeEntriesQueryCache.invalidate(weekBoundaries)
     closeForm();
   };
 

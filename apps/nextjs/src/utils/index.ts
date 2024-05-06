@@ -1,3 +1,5 @@
+import { TimeBoundaries } from "@acme/api";
+
 export function areSameDates(date1: Date, date2: Date) {
   return (
     date1.getFullYear() === date2.getFullYear() &&
@@ -79,5 +81,11 @@ export function getWeekBoundaries(date: Date) {
   endDate.setMinutes(59);
   endDate.setSeconds(59);
 
-  return { startDate, endDate };
+  return { from: startDate, to: endDate } satisfies TimeBoundaries;
+}
+
+export function getDayIndex(weekDates: Date[], currentDate: Date) {
+  const currentDay = currentDate.getDay();
+  const dayIndex = weekDates.findIndex((date) => date.getDay() === currentDay);
+  return dayIndex;
 }

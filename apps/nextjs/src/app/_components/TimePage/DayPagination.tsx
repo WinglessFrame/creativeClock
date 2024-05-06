@@ -1,3 +1,4 @@
+"use client"
 import { cn } from "@acme/ui";
 import { buttonVariants } from "@acme/ui/button";
 import {
@@ -9,21 +10,23 @@ import {
 } from "@acme/ui/pagination";
 
 import { getDateSlug, getNextDay, getPrevDay } from "~/utils";
+import { useTimeContext } from "./timeContext.client";
 
-const DayPagination = ({ selectedDate }: { selectedDate: Date }) => {
+const DayPagination = () => {
+  const { selectedDate } = useTimeContext()
   return (
     <Pagination className="m-0 w-fit">
       <PaginationContent>
         <PaginationItem>
           <PaginationPrevious
             className={cn(buttonVariants({ variant: "outline" }), "p-2")}
-            href={`/time/${getDateSlug(getPrevDay(selectedDate))}`}
+            href={`/time/${getDateSlug(getPrevDay(selectedDate.date))}`}
           />
         </PaginationItem>
         <PaginationItem>
           <PaginationNext
             className={cn(buttonVariants({ variant: "outline" }), "p-2")}
-            href={`/time/${getDateSlug(getNextDay(selectedDate))}`}
+            href={`/time/${getDateSlug(getNextDay(selectedDate.date))}`}
           />
         </PaginationItem>
       </PaginationContent>

@@ -5,6 +5,11 @@ import { and, eq, gte, lte, schema, getTableColumns } from "@acme/db";
 import { protectedProcedure } from "../trpc";
 import { TRPCError } from "@trpc/server";
 
+const timeBoundariesSchema = z.object({ from: z.date(), to: z.date() }).refine(({ to, from }) => {
+  return to > from;
+})
+export type TimeBoundaries = z.infer<typeof timeBoundariesSchema>;
+
 export const timeEntriesRouter = {
   getUserCategories: protectedProcedure.query(async ({ ctx }) => {
     const result = await ctx.db.query.usersToProjects.findMany({
@@ -28,11 +33,7 @@ export const timeEntriesRouter = {
     return result.map(userToProject => userToProject.project)
   }),
   getUserTimeEntries: protectedProcedure
-    .input(
-      z.object({ from: z.date(), to: z.date() }).refine(({ to, from }) => {
-        return to > from;
-      }),
-    )
+    .input(timeBoundariesSchema)
     .query(async ({ ctx, input }) => {
       return await ctx.db.query.timeEntries.findMany({
         where: and(

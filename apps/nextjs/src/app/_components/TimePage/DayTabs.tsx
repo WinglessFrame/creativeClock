@@ -14,49 +14,35 @@ import {
   convertMinutesToHours,
   getDateSlug,
   getShortDay,
-  getWeekBoundaries,
-  getWeekDates,
-  parseDateFromParams,
 } from "~/utils";
 import TrackerDialog from "../../_components/TimePage/TrackerDialog";
 import { api } from "../../../trpc/react";
 import { toast } from "@acme/ui/toast";
+import { useTimeContext } from "./timeContext.client";
 
 const DayTabs = ({
-  currentWeekEntriesData,
-  currentDayEntries,
-  selectedDayIdx,
-  selectedDay,
-  currentWeekBoundaries,
+  initialWeekEntriesData: currentWeekEntriesData,
 }: {
-  currentWeekEntriesData: RouterOutputs["timeEntries"]["getUserTimeEntries"];
-  currentDayEntries: RouterOutputs["timeEntries"]["getUserTimeEntries"];
-  currentWeekBoundaries: { startDate: Date; endDate: Date };
-  selectedDayIdx: number;
-  selectedDay: Date;
+  initialWeekEntriesData: RouterOutputs["timeEntries"]["getUserTimeEntries"];
 }) => {
   const router = useRouter();
+  const { selectedDate, setSelectedDate, weekBoundaries, weekDates } = useTimeContext()
+
+  const currentWeekEntriesQuery = api.timeEntries.getUserTimeEntries.useQuery(weekBoundaries, {
+    initialData: currentWeekEntriesData
+  })
+
+  const currentDayTimeEntries = useMemo(() => currentWeekEntriesQuery.data.filter(entry => entry.date.getDate() === selectedDate.date.getDate()), [currentWeekEntriesQuery.data, selectedDate.date])
 
   const params = useParams() as { slug: string[] };
 
 
-  const currentWeekDates = useMemo(() => {
-    const parsedDate = parseDateFromParams(params.slug);
-
-    if (parsedDate) {
-      const weekBoundaries = getWeekBoundaries(parsedDate);
-
-      return getWeekDates(weekBoundaries.startDate, weekBoundaries.endDate);
-    }
-  }, [params]);
-
   const deleteTimeEntryMutation = api.timeEntries.deleteTimeEntry.useMutation();
   const getUserEntriesCache = api.useUtils().timeEntries.getUserTimeEntries;
 
-  if (!currentWeekDates) return null;
 
   const onTabChange = (newDayIdx: string) => {
-    const selectedDate = currentWeekDates[Number(newDayIdx)];
+    const selectedDate = weekDates[Number(newDayIdx)];
     if (!selectedDate) throw new Error("Invalid day index");
     router.push(`/time/${getDateSlug(selectedDate)}`);
   };
@@ -80,12 +66,12 @@ const DayTabs = ({
   return (
     <Tabs
       onValueChange={onTabChange}
-      value={selectedDayIdx.toString()}
+      value={selectedDate.idxWithinTheWeek.toString()}
       className="relative mr-auto w-full"
     >
       <div className="flex items-center justify-between pb-3">
         <TabsList className="w-full justify-start gap-6 rounded-none border-b bg-transparent p-0">
-          {currentWeekDates.map((day, idx) => (
+          {weekDates.map((day, idx) => (
             <TabsTrigger
               key={idx}
               value={idx.toString()}
@@ -124,13 +110,13 @@ const DayTabs = ({
         </TabsList>
       </div>
       <TabsContent
-        value={selectedDayIdx.toString()}
+        value={selectedDate.idxWithinTheWeek.toString()}
         className="relative rounded-md border"
       >
-        {currentDayEntries?.length ? (
+        {currentDayTimeEntries?.length ? (
           <div className="flex flex-col gap-4">
             <ul className="flex flex-col">
-              {currentDayEntries.map((item) => (
+              {currentDayTimeEntries.map((item) => (
                 <li key={item.id}>
                   <div className="flex justify-between p-4">
                     <div className="flex flex-col gap-1">
@@ -152,7 +138,7 @@ const DayTabs = ({
                 </li>
               ))}
             </ul>
-            <TrackerDialog day={selectedDay}>
+            <TrackerDialog>
               <Button
                 className="mx-auto mb-4 h-12 w-full max-w-44 text-3xl"
                 variant="outline"
@@ -162,7 +148,7 @@ const DayTabs = ({
             </TrackerDialog>
           </div>
         ) : (
-          <TrackerDialog day={selectedDay}>
+          <TrackerDialog>
             <Button
               className="flex h-80 w-full flex-col gap-4"
               variant="outline"
