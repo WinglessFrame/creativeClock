@@ -1,23 +1,24 @@
 "use client";
 
-import { useCallback, useEffect, useMemo } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { PencilIcon } from "@heroicons/react/24/solid";
-import { TrashIcon } from "@heroicons/react/24/solid";
+import { useMemo } from "react";
+import { useRouter } from "next/navigation";
+import { PencilIcon, TrashIcon } from "@heroicons/react/24/solid";
+
 import { RouterOutputs } from "@acme/api";
 import { Button } from "@acme/ui/button";
 import { Separator } from "@acme/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@acme/ui/tabs";
+import { toast } from "@acme/ui/toast";
 
 import {
   areSameDates,
   convertMinutesToHours,
   getDateSlug,
   getShortDay,
+  pushDateHistoryState,
 } from "~/utils";
 import TrackerDialog from "../../_components/TimePage/TrackerDialog";
 import { api } from "../../../trpc/react";
-import { toast } from "@acme/ui/toast";
 import { useTimeContext } from "./timeContext.client";
 
 const DayTabs = ({
@@ -26,32 +27,40 @@ const DayTabs = ({
   initialWeekEntriesData: RouterOutputs["timeEntries"]["getUserTimeEntries"];
 }) => {
   const router = useRouter();
-  const { selectedDate, setSelectedDate, weekBoundaries, weekDates } = useTimeContext()
 
-  const currentWeekEntriesQuery = api.timeEntries.getUserTimeEntries.useQuery(weekBoundaries, {
-    initialData: currentWeekEntriesData
-  })
+  const { selectedDate, setSelectedDate, weekBoundaries, weekDates } =
+    useTimeContext();
 
-  const currentDayTimeEntries = useMemo(() => currentWeekEntriesQuery.data.filter(entry => entry.date.getDate() === selectedDate.date.getDate()), [currentWeekEntriesQuery.data, selectedDate.date])
+  const currentWeekEntriesQuery = api.timeEntries.getUserTimeEntries.useQuery(
+    weekBoundaries,
+    {
+      initialData: currentWeekEntriesData,
+    },
+  );
 
-  const params = useParams() as { slug: string[] };
-
+  const currentDayTimeEntries = useMemo(
+    () =>
+      currentWeekEntriesQuery.data.filter(
+        (entry) => entry.date.getDate() === selectedDate.date.getDate(),
+      ),
+    [currentWeekEntriesQuery.data, selectedDate.date],
+  );
 
   const deleteTimeEntryMutation = api.timeEntries.deleteTimeEntry.useMutation();
   const getUserEntriesCache = api.useUtils().timeEntries.getUserTimeEntries;
 
-
   const onTabChange = (newDayIdx: string) => {
     const selectedDate = weekDates[Number(newDayIdx)];
     if (!selectedDate) throw new Error("Invalid day index");
-    router.push(`/time/${getDateSlug(selectedDate)}`);
+    pushDateHistoryState(selectedDate);
   };
 
-  const deleteEntry = async (item: RouterOutputs["timeEntries"]["getUserTimeEntries"][number]) => {
+  const deleteEntry = async (
+    item: RouterOutputs["timeEntries"]["getUserTimeEntries"][number],
+  ) => {
     try {
-
-      deleteTimeEntryMutation.mutateAsync({ id: item.id })
-      router.refresh()
+      deleteTimeEntryMutation.mutateAsync({ id: item.id });
+      router.refresh();
       // getUserEntriesCache.setData({ from: currentWeekBoundaries.startDate, to: currentWeekBoundaries.endDate }, (prev) => {
       //   console.log({ prev })
       //   if (prev) {
@@ -59,9 +68,9 @@ const DayTabs = ({
       //   }
       // })
     } catch {
-      toast.error("Failed to delete entry")
+      toast.error("Failed to delete entry");
     }
-  }
+  };
 
   return (
     <Tabs
@@ -83,10 +92,10 @@ const DayTabs = ({
                   areSameDates(item.date, day),
                 )?.timeInMinutes
                   ? convertMinutesToHours(
-                    currentWeekEntriesData.find((item) =>
-                      areSameDates(item.date, day),
-                    )!.timeInMinutes!,
-                  )
+                      currentWeekEntriesData.find((item) =>
+                        areSameDates(item.date, day),
+                      )!.timeInMinutes!,
+                    )
                   : "00:00"}
               </span>
             </TabsTrigger>
@@ -100,10 +109,10 @@ const DayTabs = ({
             <span className="text-xs">
               {currentWeekEntriesData
                 ? convertMinutesToHours(
-                  currentWeekEntriesData
-                    .map((item) => item.timeInMinutes)
-                    .reduce((prev, cur) => prev + cur, 0),
-                )
+                    currentWeekEntriesData
+                      .map((item) => item.timeInMinutes)
+                      .reduce((prev, cur) => prev + cur, 0),
+                  )
                 : "00:00"}
             </span>
           </TabsTrigger>
@@ -130,8 +139,16 @@ const DayTabs = ({
                     </div>
                     <div className="flex items-center gap-4">
                       <span>{convertMinutesToHours(item.timeInMinutes)}</span>
-                      <Button size="icon"><PencilIcon className="size-4" /></Button>
-                      <Button onClick={() => deleteEntry(item)} size="icon" variant="destructive"><TrashIcon className="size-4" /></Button>
+                      <Button size="icon">
+                        <PencilIcon className="size-4" />
+                      </Button>
+                      <Button
+                        onClick={() => deleteEntry(item)}
+                        size="icon"
+                        variant="destructive"
+                      >
+                        <TrashIcon className="size-4" />
+                      </Button>
                     </div>
                   </div>
                   <Separator />

@@ -1,9 +1,14 @@
-"use client"
+"use client";
 
-import Link from 'next/link'
-import React, { useMemo } from 'react'
-import { areSameDates, getDateSlug } from '../../../utils'
-import { useTimeContext } from '../../_components/TimePage/timeContext.client'
+import React, { useMemo } from "react";
+import Link from "next/link";
+
+import { useTimeContext } from "../../_components/TimePage/timeContext.client";
+import {
+  areSameDates,
+  getDateSlug,
+  pushDateHistoryState,
+} from "../../../utils";
 
 function getFullDay(date: Date) {
   const formatter = new Intl.DateTimeFormat("en-US", {
@@ -15,8 +20,11 @@ function getFullDay(date: Date) {
 }
 
 export const CurrentDayLink = () => {
-  const { selectedDate } = useTimeContext()
-  const isSelectedACurrentDate = useMemo(() => areSameDates(selectedDate.date, new Date()), [selectedDate.date]);
+  const { selectedDate } = useTimeContext();
+  const isSelectedACurrentDate = useMemo(
+    () => areSameDates(selectedDate.date, new Date()),
+    [selectedDate.date],
+  );
   return (
     <>
       <h1 className={"text-3xl font-semibold"}>
@@ -26,13 +34,15 @@ export const CurrentDayLink = () => {
         {getFullDay(selectedDate.date)}
       </h1>
       {!isSelectedACurrentDate && (
-        <Link
+        <span
           className="underline underline-offset-4"
-          href={`/time/${getDateSlug(new Date())}`}
+          onClick={() => {
+            pushDateHistoryState(new Date());
+          }}
         >
           Return to today
-        </Link>
+        </span>
       )}
     </>
-  )
-}
+  );
+};

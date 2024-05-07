@@ -1,5 +1,10 @@
 import { TimeBoundaries } from "@acme/api";
 
+export const pushDateHistoryState = (date: Date) => {
+  const newUrl = `/time/${getDateSlug(date)}`;
+  history.pushState({ newParams: newUrl.split("/") }, "", newUrl);
+};
+
 export function areSameDates(date1: Date, date2: Date) {
   return (
     date1.getFullYear() === date2.getFullYear() &&
@@ -23,7 +28,7 @@ export function getShortDay(date: Date) {
 }
 
 export function getDateSlug(date: Date) {
-  return `/${new Intl.DateTimeFormat("en-US").format(date)}`;
+  return `${new Intl.DateTimeFormat("en-US").format(date)}`;
 }
 
 export function getPrevDay(date: Date) {
