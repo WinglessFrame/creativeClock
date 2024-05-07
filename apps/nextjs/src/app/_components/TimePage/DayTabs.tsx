@@ -28,8 +28,7 @@ const DayTabs = ({
 }) => {
   const router = useRouter();
 
-  const { selectedDate, setSelectedDate, weekBoundaries, weekDates } =
-    useTimeContext();
+  const { selectedDate, weekBoundaries, weekDates } = useTimeContext();
 
   const currentWeekEntriesQuery = api.timeEntries.getUserTimeEntries.useQuery(
     weekBoundaries,
