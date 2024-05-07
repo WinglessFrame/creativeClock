@@ -39,6 +39,11 @@ const DayTabs = ({
 
   const initialLoadRef = useRef(true);
 
+  /* Currently working solution. Skipping first load refetch.
+  On every week change it refetches week entries. i would like to
+  avoid that if possible and only fetch new weeks
+  
+  P.S. i shows progress bar on initial render only cuz we're in strict mode*/
   useEffect(() => {
     if (!initialLoadRef.current) currentWeekEntriesQuery.refetch();
     else initialLoadRef.current = false;
@@ -51,6 +56,34 @@ const DayTabs = ({
       ),
     [currentWeekEntriesQuery.data, selectedDate.date],
   );
+
+  //TODO check if it is possible to query only if there is no key in cache.
+  // I tried this, but the key was already in cache, despite there is no data
+  // This is why somehow it does not initially fetch the query. it thinks it
+  // is already fetch and the only option for now is refetch as i did above
+
+  // We need to investigate why we're getting empty data in initial fetch
+
+  /*  useEffect(() => {
+    const queryKeyInputs = queryClient
+      .getQueryCache()
+      .getAll()
+      .map((cache) => {
+        const inputKey = cache.queryKey[1] as undefined | { input: unknown };
+        if (inputKey?.input) return inputKey.input;
+      })
+      .filter(Boolean);
+
+    console.log(queryKeyInputs, weekBoundaries);
+
+    if (
+      !queryKeyInputs.some(
+        (item) => item.from.getTime() === weekBoundaries.from.getTime(),
+      )
+    ) {
+      currentWeekEntriesQuery.refetch();
+    }
+  }, [weekBoundaries.from.getDate()]); */
 
   const deleteTimeEntryMutation = api.timeEntries.deleteTimeEntry.useMutation();
   const getUserEntriesCache = api.useUtils().timeEntries.getUserTimeEntries;
