@@ -37,9 +37,9 @@ import { useRouter } from "next/navigation";
 import { useTimeContext } from "./timeContext.client";
 
 const formSchema = z.object({
-  projectId: z.string(),
-  projectCategoryId: z.string(),
-  timeInMinutes: z.coerce.number(),
+  projectId: z.string().min(1),
+  projectCategoryId: z.string().min(1),
+  timeInMinutes: z.coerce.number().min(1),
   notes: z.string().optional(),
 });
 
@@ -59,7 +59,6 @@ const TrackerDialog = ({ children }: { children: ReactNode, }) => {
   const createTimeEntry = api.timeEntries.createTimeEntry.useMutation();
   const timeEntriesQueryCache = api.useUtils().timeEntries.getUserTimeEntries;
 
-  const router = useRouter()
   const closeForm = () => {
     setIsFormOpen(false);
   };

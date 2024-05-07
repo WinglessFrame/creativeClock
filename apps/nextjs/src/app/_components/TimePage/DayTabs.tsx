@@ -23,8 +23,10 @@ import { useTimeContext } from "./timeContext.client";
 
 const DayTabs = ({
   initialWeekEntriesData: currentWeekEntriesData,
+  initialDate,
 }: {
   initialWeekEntriesData: RouterOutputs["timeEntries"]["getUserTimeEntries"];
+  initialDate: Date;
 }) => {
   const router = useRouter();
 
@@ -33,57 +35,22 @@ const DayTabs = ({
   const currentWeekEntriesQuery = api.timeEntries.getUserTimeEntries.useQuery(
     weekBoundaries,
     {
-      initialData: currentWeekEntriesData,
+      initialData: () => {
+        if (weekDates.find(date => areSameDates(date, initialDate))) {
+          currentWeekEntriesData
+        }
+        return undefined
+      }
     },
   );
 
-  const initialLoadRef = useRef(true);
-
-  /* Currently working solution. Skipping first load refetch.
-  On every week change it refetches week entries. i would like to
-  avoid that if possible and only fetch new weeks
-  
-  P.S. i shows progress bar on initial render only cuz we're in strict mode*/
-  useEffect(() => {
-    if (!initialLoadRef.current) currentWeekEntriesQuery.refetch();
-    else initialLoadRef.current = false;
-  }, [weekBoundaries.from.getDate()]);
-
   const currentDayTimeEntries = useMemo(
     () =>
-      currentWeekEntriesQuery.data.filter(
+      currentWeekEntriesQuery.data?.filter(
         (entry) => entry.date.getDate() === selectedDate.date.getDate(),
       ),
     [currentWeekEntriesQuery.data, selectedDate.date],
   );
-
-  //TODO check if it is possible to query only if there is no key in cache.
-  // I tried this, but the key was already in cache, despite there is no data
-  // This is why somehow it does not initially fetch the query. it thinks it
-  // is already fetch and the only option for now is refetch as i did above
-
-  // We need to investigate why we're getting empty data in initial fetch
-
-  /*  useEffect(() => {
-    const queryKeyInputs = queryClient
-      .getQueryCache()
-      .getAll()
-      .map((cache) => {
-        const inputKey = cache.queryKey[1] as undefined | { input: unknown };
-        if (inputKey?.input) return inputKey.input;
-      })
-      .filter(Boolean);
-
-    console.log(queryKeyInputs, weekBoundaries);
-
-    if (
-      !queryKeyInputs.some(
-        (item) => item.from.getTime() === weekBoundaries.from.getTime(),
-      )
-    ) {
-      currentWeekEntriesQuery.refetch();
-    }
-  }, [weekBoundaries.from.getDate()]); */
 
   const deleteTimeEntryMutation = api.timeEntries.deleteTimeEntry.useMutation();
   const getUserEntriesCache = api.useUtils().timeEntries.getUserTimeEntries;
@@ -127,14 +94,14 @@ const DayTabs = ({
             >
               <span>{getShortDay(day)}</span>
               <span className="text-xs">
-                {currentWeekEntriesData.find((item) =>
+                {currentWeekEntriesQuery.data && currentWeekEntriesQuery.data?.find((item) =>
                   areSameDates(item.date, day),
                 )?.timeInMinutes
                   ? convertMinutesToHours(
-                      currentWeekEntriesData.find((item) =>
-                        areSameDates(item.date, day),
-                      )!.timeInMinutes!,
-                    )
+                    currentWeekEntriesQuery.data?.find?.((item) =>
+                      areSameDates(item.date, day),
+                    )?.timeInMinutes ?? 0,
+                  )
                   : "00:00"}
               </span>
             </TabsTrigger>
@@ -148,10 +115,10 @@ const DayTabs = ({
             <span className="text-xs">
               {currentWeekEntriesData
                 ? convertMinutesToHours(
-                    currentWeekEntriesData
-                      .map((item) => item.timeInMinutes)
-                      .reduce((prev, cur) => prev + cur, 0),
-                  )
+                  currentWeekEntriesData
+                    .map((item) => item.timeInMinutes)
+                    .reduce((prev, cur) => prev + cur, 0),
+                )
                 : "00:00"}
             </span>
           </TabsTrigger>
