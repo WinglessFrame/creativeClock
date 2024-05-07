@@ -15,7 +15,7 @@ export default function NavigationEvents() {
 
       setSelectedDate(newDate);
     }
-  }, [pathname, selectedDate.date]);
+  }, [pathname]);
 
   return null;
 }

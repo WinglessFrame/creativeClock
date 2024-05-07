@@ -1,19 +1,10 @@
-import { Suspense, useMemo } from "react";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import DayPagination from "~/app/_components/TimePage/DayPagination";
 import DayTabs from "~/app/_components/TimePage/DayTabs";
 import NavigationEvents from "~/app/_components/TimePage/NavigationEvents";
 import { api } from "~/trpc/server";
-import {
-  areSameDates,
-  getDateSlug,
-  getDayIndex,
-  getWeekBoundaries,
-  getWeekDates,
-  parseDateFromParams,
-} from "~/utils";
+import { getWeekBoundaries, parseDateFromParams } from "~/utils";
 import { TimeContextProvider } from "../../_components/TimePage/timeContext.client";
 import { CurrentDayLink } from "./currentDayLink.client";
 
