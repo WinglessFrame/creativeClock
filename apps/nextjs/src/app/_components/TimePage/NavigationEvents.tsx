@@ -7,7 +7,7 @@ import { useTimeContext } from "./timeContext.client";
 
 export default function NavigationEvents() {
   const pathname = usePathname();
-  const { setSelectedDate, selectedDate } = useTimeContext();
+  const { setSelectedDate } = useTimeContext();
 
   useEffect(() => {
     if (pathname !== "/time") {
