@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { PencilIcon, TrashIcon } from "@heroicons/react/24/solid";
 
@@ -13,12 +13,12 @@ import { toast } from "@acme/ui/toast";
 import {
   areSameDates,
   convertMinutesToHours,
-  getDateSlug,
   getShortDay,
   pushDateHistoryState,
 } from "~/utils";
 import TrackerDialog from "../../_components/TimePage/TrackerDialog";
 import { api } from "../../../trpc/react";
+import ProgressBar from "../utils/ProgressBar";
 import { useTimeContext } from "./timeContext.client";
 
 const DayTabs = ({
@@ -36,6 +36,13 @@ const DayTabs = ({
       initialData: currentWeekEntriesData,
     },
   );
+
+  const initialLoadRef = useRef(true);
+
+  useEffect(() => {
+    if (!initialLoadRef.current) currentWeekEntriesQuery.refetch();
+    else initialLoadRef.current = false;
+  }, [weekBoundaries.from.getDate()]);
 
   const currentDayTimeEntries = useMemo(
     () =>
@@ -121,7 +128,11 @@ const DayTabs = ({
         value={selectedDate.idxWithinTheWeek.toString()}
         className="relative rounded-md border"
       >
-        {currentDayTimeEntries?.length ? (
+        {currentWeekEntriesQuery.isRefetching ? (
+          <div className="flex h-80 w-full items-center justify-center">
+            <ProgressBar className="h-2 w-1/2" />
+          </div>
+        ) : currentDayTimeEntries?.length ? (
           <div className="flex flex-col gap-4">
             <ul className="flex flex-col">
               {currentDayTimeEntries.map((item) => (
@@ -169,7 +180,7 @@ const DayTabs = ({
               className="flex h-80 w-full flex-col gap-4"
               variant="outline"
             >
-              <span className="text-3xl">No time tracked today</span>
+              <span className="text-3xl">No time tracked</span>
               <span>Click to add your first record</span>
             </Button>
           </TrackerDialog>
