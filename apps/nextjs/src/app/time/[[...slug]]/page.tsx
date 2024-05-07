@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 
 import DayPagination from "~/app/_components/TimePage/DayPagination";
 import DayTabs from "~/app/_components/TimePage/DayTabs";
+import NavigationEvents from "~/app/_components/TimePage/NavigationEvents";
 import { api } from "~/trpc/server";
 import {
   areSameDates,
@@ -26,8 +27,9 @@ export default async function TimePage({
 
   const currentWeekBoundaries = getWeekBoundaries(parsedDate);
 
-  const currentWeekEntries = await api.timeEntries.getUserTimeEntries(currentWeekBoundaries);
-
+  const currentWeekEntries = await api.timeEntries.getUserTimeEntries(
+    currentWeekBoundaries,
+  );
 
   return (
     <TimeContextProvider initialDate={parsedDate}>
@@ -35,9 +37,8 @@ export default async function TimePage({
         <DayPagination />
         <CurrentDayLink />
       </div>
-      <DayTabs
-        initialWeekEntriesData={currentWeekEntries}
-      />
+      <DayTabs initialWeekEntriesData={currentWeekEntries} />
+      <NavigationEvents />
     </TimeContextProvider>
   );
 }

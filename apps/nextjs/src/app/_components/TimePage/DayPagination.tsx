@@ -10,7 +10,12 @@ import {
   PaginationItem,
 } from "@acme/ui/pagination";
 
-import { getDateSlug, getNextDay, getPrevDay } from "~/utils";
+import {
+  getDateSlug,
+  getNextDay,
+  getPrevDay,
+  pushDateHistoryState,
+} from "~/utils";
 import { useTimeContext } from "./timeContext.client";
 
 const DayPagination = () => {
@@ -22,8 +27,7 @@ const DayPagination = () => {
           <Button
             className={cn(buttonVariants({ variant: "default" }), "p-2")}
             onClick={() => {
-              const newUrl = `/time/${getDateSlug(getPrevDay(selectedDate.date))}`;
-              history.pushState({ newParams: newUrl.split("/") }, "", newUrl);
+              pushDateHistoryState(getPrevDay(selectedDate.date));
             }}
           >
             <ChevronLeftIcon />
@@ -33,8 +37,7 @@ const DayPagination = () => {
           <Button
             className={cn(buttonVariants({ variant: "default" }), "p-2")}
             onClick={() => {
-              const newUrl = `/time/${getDateSlug(getNextDay(selectedDate.date))}`;
-              history.pushState({ newParams: newUrl.split("/") }, "", newUrl);
+              pushDateHistoryState(getNextDay(selectedDate.date));
             }}
           >
             <ChevronRightIcon />

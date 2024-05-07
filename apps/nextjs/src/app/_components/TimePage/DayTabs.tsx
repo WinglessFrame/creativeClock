@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useMemo } from "react";
+import { useRouter } from "next/navigation";
 import { PencilIcon, TrashIcon } from "@heroicons/react/24/solid";
 
 import { RouterOutputs } from "@acme/api";
@@ -15,34 +15,11 @@ import {
   convertMinutesToHours,
   getDateSlug,
   getShortDay,
-  parseDateFromParams,
+  pushDateHistoryState,
 } from "~/utils";
 import TrackerDialog from "../../_components/TimePage/TrackerDialog";
 import { api } from "../../../trpc/react";
 import { useTimeContext } from "./timeContext.client";
-
-export const useModifiedPushState = () => {
-  const { setSelectedDate } = useTimeContext();
-  useEffect(() => {
-    const originalPushState = history.pushState;
-    history.pushState = new Proxy(history.pushState, {
-      apply: (target, thisArg, argArray: Parameters<History["pushState"]>) => {
-        if (history.state.newParams) {
-          const parsedDate = parseDateFromParams(history.state.newParams);
-
-          if (parsedDate) setSelectedDate(parsedDate!);
-          else throw Error("Error parsing date");
-        }
-
-        return target.apply(thisArg, argArray);
-      },
-    });
-
-    return () => {
-      history.pushState = originalPushState; // restore the copy
-    };
-  }, []);
-};
 
 const DayTabs = ({
   initialWeekEntriesData: currentWeekEntriesData,
@@ -50,7 +27,7 @@ const DayTabs = ({
   initialWeekEntriesData: RouterOutputs["timeEntries"]["getUserTimeEntries"];
 }) => {
   const router = useRouter();
-  useModifiedPushState();
+
   const { selectedDate, setSelectedDate, weekBoundaries, weekDates } =
     useTimeContext();
 
@@ -69,19 +46,13 @@ const DayTabs = ({
     [currentWeekEntriesQuery.data, selectedDate.date],
   );
 
-  const params = useParams() as { slug: string[] };
-
   const deleteTimeEntryMutation = api.timeEntries.deleteTimeEntry.useMutation();
   const getUserEntriesCache = api.useUtils().timeEntries.getUserTimeEntries;
 
   const onTabChange = (newDayIdx: string) => {
     const selectedDate = weekDates[Number(newDayIdx)];
     if (!selectedDate) throw new Error("Invalid day index");
-    //router.push(`/time/${getDateSlug(selectedDate)}`);
-
-    const newUrl = `/time/${getDateSlug(selectedDate)}`;
-
-    history.pushState({ newParams: newUrl.split("/") }, "", newUrl);
+    pushDateHistoryState(selectedDate);
   };
 
   const deleteEntry = async (

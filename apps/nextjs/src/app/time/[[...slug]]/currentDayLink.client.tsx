@@ -4,7 +4,11 @@ import React, { useMemo } from "react";
 import Link from "next/link";
 
 import { useTimeContext } from "../../_components/TimePage/timeContext.client";
-import { areSameDates, getDateSlug } from "../../../utils";
+import {
+  areSameDates,
+  getDateSlug,
+  pushDateHistoryState,
+} from "../../../utils";
 
 function getFullDay(date: Date) {
   const formatter = new Intl.DateTimeFormat("en-US", {
@@ -30,12 +34,14 @@ export const CurrentDayLink = () => {
         {getFullDay(selectedDate.date)}
       </h1>
       {!isSelectedACurrentDate && (
-        <Link
+        <span
           className="underline underline-offset-4"
-          href={`/time/${getDateSlug(new Date())}`}
+          onClick={() => {
+            pushDateHistoryState(new Date());
+          }}
         >
           Return to today
-        </Link>
+        </span>
       )}
     </>
   );
