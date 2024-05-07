@@ -36,11 +36,11 @@ const DayTabs = ({
     weekBoundaries,
     {
       initialData: () => {
-        if (weekDates.find(date => areSameDates(date, initialDate))) {
-          currentWeekEntriesData
+        if (weekDates.find((date) => areSameDates(date, initialDate))) {
+          currentWeekEntriesData;
         }
-        return undefined
-      }
+        return undefined;
+      },
     },
   );
 
@@ -94,14 +94,15 @@ const DayTabs = ({
             >
               <span>{getShortDay(day)}</span>
               <span className="text-xs">
-                {currentWeekEntriesQuery.data && currentWeekEntriesQuery.data?.find((item) =>
+                {currentWeekEntriesQuery.data &&
+                currentWeekEntriesQuery.data?.find((item) =>
                   areSameDates(item.date, day),
                 )?.timeInMinutes
                   ? convertMinutesToHours(
-                    currentWeekEntriesQuery.data?.find?.((item) =>
-                      areSameDates(item.date, day),
-                    )?.timeInMinutes ?? 0,
-                  )
+                      currentWeekEntriesQuery.data?.find?.((item) =>
+                        areSameDates(item.date, day),
+                      )?.timeInMinutes ?? 0,
+                    )
                   : "00:00"}
               </span>
             </TabsTrigger>
@@ -115,10 +116,10 @@ const DayTabs = ({
             <span className="text-xs">
               {currentWeekEntriesData
                 ? convertMinutesToHours(
-                  currentWeekEntriesData
-                    .map((item) => item.timeInMinutes)
-                    .reduce((prev, cur) => prev + cur, 0),
-                )
+                    currentWeekEntriesData
+                      .map((item) => item.timeInMinutes)
+                      .reduce((prev, cur) => prev + cur, 0),
+                  )
                 : "00:00"}
             </span>
           </TabsTrigger>
@@ -128,7 +129,7 @@ const DayTabs = ({
         value={selectedDate.idxWithinTheWeek.toString()}
         className="relative rounded-md border"
       >
-        {currentWeekEntriesQuery.isRefetching ? (
+        {currentWeekEntriesQuery.isLoading ? (
           <div className="flex h-80 w-full items-center justify-center">
             <ProgressBar className="h-2 w-1/2" />
           </div>
