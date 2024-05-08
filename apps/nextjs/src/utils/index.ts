@@ -113,3 +113,6 @@ export function getDayIndex(weekDates: Date[], currentDate: Date) {
   const dayIndex = weekDates.findIndex((date) => date.getDay() === currentDay);
   return dayIndex;
 }
+
+export const isFirstWeekDay = (idx: number) => idx === 0;
+export const isLastWeekDay = (idx: number) => idx === 6;

@@ -12,7 +12,11 @@ import { toast } from "@acme/ui/toast";
 import {
   areSameDates,
   convertMinutesToHHMM,
+  getPrevDay,
   getShortDay,
+  getWeekBoundaries,
+  isFirstWeekDay,
+  isLastWeekDay,
   pushDateHistoryState,
 } from "~/utils";
 import TrackerDialog from "../../_components/TimePage/TrackerDialog";
@@ -46,8 +50,6 @@ const DayTabs = ({
     [currentWeekEntriesQuery.data, selectedDate.date],
   );
 
-  console.log(currentWeekEntriesQuery.data);
-
   const getUserEntriesCache = api.useUtils().timeEntries.getUserTimeEntries;
   const { mutateAsync: deleteEntry } =
     api.timeEntries.deleteTimeEntry.useMutation({
@@ -77,18 +79,20 @@ const DayTabs = ({
     });
 
   const onTabChange = (newDayIdx: string) => {
-    const selectedDate = weekDates[Number(newDayIdx)];
+    const selectedDate = weekDates[+newDayIdx];
     if (!selectedDate) throw new Error("Invalid day index");
     pushDateHistoryState(selectedDate);
   };
 
   const weekTimeSummary = useMemo(
     () =>
-      convertMinutesToHHMM(
-        currentWeekEntriesQuery.data
-          ?.map((item) => item.timeInMinutes)
-          .reduce((prev, cur) => prev + cur, 0),
-      ),
+      currentWeekEntriesQuery.data
+        ? convertMinutesToHHMM(
+            currentWeekEntriesQuery.data
+              ?.map((item) => item.timeInMinutes)
+              .reduce((prev, cur) => prev + cur, 0),
+          )
+        : "Loading",
     [currentWeekEntriesQuery.data],
   );
 
