@@ -37,9 +37,8 @@ const DayTabs = ({
     {
       initialData: () => {
         if (weekDates.find((date) => areSameDates(date, initialDate))) {
-          currentWeekEntriesData;
+          return currentWeekEntriesData;
         }
-        return undefined;
       },
     },
   );
