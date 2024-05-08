@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useMemo } from "react";
 import { PencilIcon, TrashIcon } from "@heroicons/react/24/solid";
 
 import { RouterOutputs } from "@acme/api";
@@ -12,7 +11,7 @@ import { toast } from "@acme/ui/toast";
 
 import {
   areSameDates,
-  convertMinutesToHours,
+  convertMinutesToHHMM,
   getShortDay,
   pushDateHistoryState,
 } from "~/utils";
@@ -22,14 +21,12 @@ import ProgressBar from "../utils/ProgressBar";
 import { useTimeContext } from "./timeContext.client";
 
 const DayTabs = ({
-  initialWeekEntriesData: currentWeekEntriesData,
+  initialWeekEntriesData,
   initialDate,
 }: {
   initialWeekEntriesData: RouterOutputs["timeEntries"]["getUserTimeEntries"];
   initialDate: Date;
 }) => {
-  const router = useRouter();
-
   const { selectedDate, weekBoundaries, weekDates } = useTimeContext();
 
   const currentWeekEntriesQuery = api.timeEntries.getUserTimeEntries.useQuery(
@@ -37,7 +34,7 @@ const DayTabs = ({
     {
       initialData: () =>
         weekDates.find((date) => areSameDates(date, initialDate)) &&
-        currentWeekEntriesData,
+        initialWeekEntriesData,
     },
   );
 
@@ -71,6 +68,16 @@ const DayTabs = ({
     }
   };
 
+  const weekTimeSummary = useMemo(
+    () =>
+      convertMinutesToHHMM(
+        currentWeekEntriesQuery.data
+          ?.map((item) => item.timeInMinutes)
+          .reduce((prev, cur) => prev + cur, 0),
+      ),
+    [currentWeekEntriesQuery.data],
+  );
+
   return (
     <Tabs
       onValueChange={onTabChange}
@@ -91,7 +98,7 @@ const DayTabs = ({
                 currentWeekEntriesQuery.data?.find((item) =>
                   areSameDates(item.date, day),
                 )?.timeInMinutes
-                  ? convertMinutesToHours(
+                  ? convertMinutesToHHMM(
                       currentWeekEntriesQuery.data?.find?.((item) =>
                         areSameDates(item.date, day),
                       )?.timeInMinutes ?? 0,
@@ -106,15 +113,7 @@ const DayTabs = ({
             className="relative mb-2 ml-auto flex w-24 flex-col items-end rounded-none border-b-2 border-b-transparent bg-transparent px-0 font-semibold text-muted-foreground shadow-none transition-none data-[state=active]:border-b-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
           >
             <span>{"Week total"}</span>
-            <span className="text-xs">
-              {currentWeekEntriesData
-                ? convertMinutesToHours(
-                    currentWeekEntriesData
-                      .map((item) => item.timeInMinutes)
-                      .reduce((prev, cur) => prev + cur, 0),
-                  )
-                : "00:00"}
-            </span>
+            <span className="text-xs">{weekTimeSummary}</span>
           </TabsTrigger>
         </TabsList>
       </div>
@@ -142,8 +141,17 @@ const DayTabs = ({
                       <span className="text-xs">{item.notes}</span>
                     </div>
                     <div className="flex items-center gap-4">
-                      <span>{convertMinutesToHours(item.timeInMinutes)}</span>
-                      <TrackerDialog mode="edit" formValues={item}>
+                      <span>{convertMinutesToHHMM(item.timeInMinutes)}</span>
+                      <TrackerDialog
+                        mode="edit"
+                        formValues={{
+                          projectId: item.projectCategory.projectId,
+                          notes: item.notes ?? "",
+                          projectCategoryId: item.projectCategoryId,
+                          timeInMinutes: item.timeInMinutes,
+                        }}
+                        entryId={item.id}
+                      >
                         <Button size="icon">
                           <PencilIcon className="size-4" />
                         </Button>

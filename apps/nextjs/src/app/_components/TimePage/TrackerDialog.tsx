@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { SubmitHandler, useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 
+import { RouterOutputs } from "@acme/api";
 import { Button } from "@acme/ui/button";
 import {
   Dialog,
@@ -22,7 +23,6 @@ import {
   FormLabel,
 } from "@acme/ui/form";
 import { Input } from "@acme/ui/input";
-import { Label } from "@acme/ui/label";
 import {
   Select,
   SelectContent,
@@ -32,15 +32,14 @@ import {
 } from "@acme/ui/select";
 import { Textarea } from "@acme/ui/textarea";
 
+import HHMMStringSchema from "~/schemas/HHMMStringSchema";
+import {
+  convertHHMMToMinutes,
+  convertMinutesToHHMM,
+  getFullDay,
+} from "~/utils";
 import { api } from "../../../trpc/react";
 import { useTimeContext } from "./timeContext.client";
-
-const formSchema = z.object({
-  projectId: z.string().min(1),
-  projectCategoryId: z.string().min(1),
-  timeInMinutes: z.coerce.number().min(1),
-  notes: z.string().optional(),
-});
 
 type Props = {
   children: ReactNode;
@@ -50,50 +49,70 @@ type Props = {
     }
   | {
       mode: "edit";
-      formValues: z.infer<typeof formSchema>;
+      entryId: RouterOutputs["timeEntries"]["getUserTimeEntries"][number]["id"];
+      formValues: {
+        projectId: string;
+        notes: string;
+        projectCategoryId: string;
+        timeInMinutes: number;
+      };
     }
 );
 
-const TrackerDialog = ({ mode = "create", children, formValues }: Props) => {
+const timeEntrySchema = z.object({
+  projectId: z.string().min(1),
+  projectCategoryId: z.string().min(1),
+  timeInHHMM: HHMMStringSchema.transform(convertHHMMToMinutes),
+  notes: z.string().optional(),
+});
+
+const TrackerDialog = ({
+  mode = "create",
+  children,
+  formValues,
+  entryId,
+}: Props) => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const { selectedDate, weekBoundaries } = useTimeContext();
-  console.log(formValues);
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: formValues ?? {
-      projectId: "",
-      notes: "",
-      projectCategoryId: "",
-      timeInMinutes: 0,
-    },
+
+  const form = useForm<z.infer<typeof timeEntrySchema>>({
+    resolver: zodResolver(timeEntrySchema),
+    defaultValues: formValues
+      ? {
+          ...formValues,
+          timeInHHMM: convertMinutesToHHMM(formValues.timeInMinutes),
+        }
+      : {
+          projectId: "",
+          notes: "",
+          projectCategoryId: "",
+          timeInHHMM: "",
+        },
   });
-
-  const createTimeEntry = api.timeEntries.createTimeEntry.useMutation();
-  const timeEntriesQueryCache = api.useUtils().timeEntries.getUserTimeEntries;
-
-  const closeForm = () => {
-    setIsFormOpen(false);
-  };
-
-  const onSubmit: SubmitHandler<z.infer<typeof formSchema>> = async (
-    values,
-  ) => {
-    await createTimeEntry.mutateAsync({
-      date: selectedDate.date,
-      notes: values.notes,
-      projectCategoryId: values.projectCategoryId,
-      timeInMinutes: values.timeInMinutes,
-    });
-    timeEntriesQueryCache.invalidate(weekBoundaries);
-    closeForm();
-  };
-
   const selectedCategory = useWatch({
     control: form.control,
     name: "projectId",
   });
 
   const projectsQuery = api.timeEntries.getUserCategories.useQuery();
+  const createTimeEntry = api.timeEntries.createTimeEntry.useMutation();
+  const updateTimeEntry = api.timeEntries.updateTimeEntry.useMutation();
+  const timeEntriesQueryCache = api.useUtils().timeEntries.getUserTimeEntries;
+
+  const onSubmit: SubmitHandler<z.infer<typeof timeEntrySchema>> = async (
+    values,
+  ) => {
+    await (mode === "create" ? createTimeEntry : updateTimeEntry).mutateAsync({
+      date: selectedDate.date,
+      notes: values.notes,
+      projectCategoryId: values.projectCategoryId,
+      timeInMinutes: values.timeInHHMM,
+      id: entryId,
+    });
+
+    timeEntriesQueryCache.invalidate(weekBoundaries);
+    setIsFormOpen(false);
+  };
 
   const categories = useMemo(() => {
     if (projectsQuery.isSuccess) {
@@ -108,10 +127,13 @@ const TrackerDialog = ({ mode = "create", children, formValues }: Props) => {
     <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="sm:max-w-[800px]">
+        <DialogHeader>
+          <DialogTitle>
+            {mode === "create" ? "New time entry for" : "Edit time entry for"}{" "}
+            {getFullDay(selectedDate.date)}
+          </DialogTitle>
+        </DialogHeader>
         <form onSubmit={form.handleSubmit(onSubmit)}>
-          <DialogHeader>
-            <DialogTitle>Track time</DialogTitle>
-          </DialogHeader>
           <Form {...form}>
             <div
               id="time-entry-dialog"
@@ -152,7 +174,7 @@ const TrackerDialog = ({ mode = "create", children, formValues }: Props) => {
                 name="projectCategoryId"
                 render={({ field }) => (
                   <FormItem className="grid grid-cols-4 items-center gap-4">
-                    <Label className="text-right">Task</Label>
+                    <FormLabel className="text-right">Task</FormLabel>
                     <FormControl>
                       <Select
                         disabled={!categories || !categories.length}
@@ -183,7 +205,7 @@ const TrackerDialog = ({ mode = "create", children, formValues }: Props) => {
                 name="notes"
                 render={({ field }) => (
                   <FormItem className="grid grid-cols-4 items-center gap-4">
-                    <Label className="text-right">Notes</Label>
+                    <FormLabel className="text-right">Notes</FormLabel>
                     <FormControl>
                       <Textarea
                         {...field}
@@ -196,18 +218,15 @@ const TrackerDialog = ({ mode = "create", children, formValues }: Props) => {
               />
               <FormField
                 control={form.control}
-                name="timeInMinutes"
+                name="timeInHHMM"
                 render={({ field }) => (
                   <FormItem className="grid grid-cols-4 items-center gap-4">
-                    <Label className="text-right">Time in minutes</Label>
+                    <FormLabel className="text-right">Time</FormLabel>
                     <FormControl>
                       <Input
                         {...field}
-                        type="number"
                         className="col-span-3"
-                        placeholder="0"
-                        step="1"
-                        min="0"
+                        placeholder="00:00"
                       />
                     </FormControl>
                   </FormItem>
@@ -216,7 +235,9 @@ const TrackerDialog = ({ mode = "create", children, formValues }: Props) => {
             </div>
           </Form>
           <DialogFooter>
-            <Button type="submit">Create</Button>
+            <Button type="submit">
+              {mode === "create" ? "Create" : "Update"}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

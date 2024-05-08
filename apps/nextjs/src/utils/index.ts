@@ -1,5 +1,7 @@
 import { TimeBoundaries } from "@acme/api";
 
+import HHMMStringSchema from "~/schemas/HHMMStringSchema";
+
 export const pushDateHistoryState = (date: Date) => {
   const newUrl = `/time/${getDateSlug(date)}`;
   history.pushState({ newParams: newUrl.split("/") }, "", newUrl);
@@ -27,6 +29,15 @@ export function getShortDay(date: Date) {
   return formatter.format(date);
 }
 
+export function getFullDay(date: Date) {
+  const formatter = new Intl.DateTimeFormat("en-US", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+  });
+  return formatter.format(date);
+}
+
 export function getDateSlug(date: Date) {
   return `${new Intl.DateTimeFormat("en-US").format(date)}`;
 }
@@ -43,11 +54,19 @@ export function getNextDay(date: Date) {
   return nextDay;
 }
 
-export const convertMinutesToHours = (totalMinutes: number) => {
+export const convertMinutesToHHMM = (totalMinutes: number) => {
   const hours = Math.floor(totalMinutes / 60);
   const minutes = totalMinutes % 60;
 
   return `${padToTwoDigits(hours)}:${padToTwoDigits(minutes)}`;
+};
+
+export const convertHHMMToMinutes = (val: string) => {
+  const parsedTime = HHMMStringSchema.parse(val);
+
+  const [hours, minutes] = parsedTime.split(":").map(Number);
+
+  return hours! * 60 + minutes!;
 };
 
 function padToTwoDigits(num: number) {
