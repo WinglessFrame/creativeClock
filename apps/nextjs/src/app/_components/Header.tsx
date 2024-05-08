@@ -43,7 +43,7 @@ const NavItem = ({
     <NavigationMenuItem>
       <Link href={href} legacyBehavior passHref>
         <NavigationMenuLink
-          active={pathname === href}
+          active={pathname.startsWith(href)}
           className={navigationMenuTriggerStyle()}
         >
           {label}
