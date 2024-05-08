@@ -35,11 +35,9 @@ const DayTabs = ({
   const currentWeekEntriesQuery = api.timeEntries.getUserTimeEntries.useQuery(
     weekBoundaries,
     {
-      initialData: () => {
-        if (weekDates.find((date) => areSameDates(date, initialDate))) {
-          return currentWeekEntriesData;
-        }
-      },
+      initialData: () =>
+        weekDates.find((date) => areSameDates(date, initialDate)) &&
+        currentWeekEntriesData,
     },
   );
 
