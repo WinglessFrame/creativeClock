@@ -31,6 +31,7 @@ import {
   SelectValue,
 } from "@acme/ui/select";
 import { Textarea } from "@acme/ui/textarea";
+import { toast } from "@acme/ui/toast";
 
 import HHMMStringSchema from "~/schemas/HHMMStringSchema";
 import {
@@ -101,35 +102,52 @@ const TrackerDialog = ({
       console.log(newEntry);
     },
   });
+
   const updateTimeEntry = api.timeEntries.updateTimeEntry.useMutation({
     onMutate: async (updatedEntry) => {
       getUserEntriesCache.setData(weekBoundaries, (prev) => {
+        let entryToUpdate:
+          | RouterOutputs["timeEntries"]["getUserTimeEntries"][number]
+          | undefined;
         if (prev)
-          return prev.map((item) =>
-            item.id === updatedEntry.id
-              ? {
-                  ...item,
-                  notes: updatedEntry.notes ?? "",
-                  timeInMinutes: updatedEntry.timeInMinutes,
-                  projectCategoryId: updatedEntry.projectCategoryId,
-                  projectCategory: {
-                    ...item.projectCategory,
-                    id: updatedEntry.projectCategoryId,
-                    name:
-                      categories?.find(
-                        (item) => item.id === updatedEntry.projectCategoryId,
-                      )?.name ?? "",
-                  },
-                }
-              : item,
-          );
+          return prev.map((item) => {
+            if (item.id === updatedEntry.id) {
+              entryToUpdate = item;
+              return {
+                ...item,
+                notes: updatedEntry.notes ?? "",
+                timeInMinutes: updatedEntry.timeInMinutes,
+                projectCategoryId: updatedEntry.projectCategoryId,
+                projectCategory: {
+                  ...item.projectCategory,
+                  id: updatedEntry.projectCategoryId,
+                  name:
+                    categories?.find(
+                      (item) => item.id === updatedEntry.projectCategoryId,
+                    )?.name ?? "",
+                },
+              };
+            }
+
+            return item;
+          });
       });
+    },
+    onError: (_err, _newTodo, context) => {
+      getUserEntriesCache.setData(weekBoundaries, (prev) => {
+        if (prev && context) return [...prev, context];
+      });
+      toast.error("Failed to update entry");
+    },
+    onSettled: () => {
+      getUserEntriesCache.invalidate();
     },
   });
 
   const onSubmit: SubmitHandler<z.infer<typeof timeEntrySchema>> = async (
     values,
   ) => {
+    setIsFormOpen(false);
     await (mode === "create" ? createTimeEntry : updateTimeEntry).mutateAsync({
       date: selectedDate.date,
       notes: values.notes,
@@ -137,9 +155,6 @@ const TrackerDialog = ({
       timeInMinutes: values.timeInHHMM,
       id: entryId,
     });
-
-    //timeEntriesQueryCache.invalidate(weekBoundaries);
-    setIsFormOpen(false);
   };
 
   const categories = useMemo(() => {

@@ -46,6 +46,8 @@ const DayTabs = ({
     [currentWeekEntriesQuery.data, selectedDate.date],
   );
 
+  console.log(currentWeekEntriesQuery.data);
+
   const getUserEntriesCache = api.useUtils().timeEntries.getUserTimeEntries;
   const { mutateAsync: deleteEntry } =
     api.timeEntries.deleteTimeEntry.useMutation({
