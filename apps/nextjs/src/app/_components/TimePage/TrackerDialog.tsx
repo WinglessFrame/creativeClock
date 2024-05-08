@@ -33,7 +33,6 @@ import {
 import { Textarea } from "@acme/ui/textarea";
 
 import { api } from "../../../trpc/react";
-import { useRouter } from "next/navigation";
 import { useTimeContext } from "./timeContext.client";
 
 const formSchema = z.object({
@@ -43,12 +42,25 @@ const formSchema = z.object({
   notes: z.string().optional(),
 });
 
-const TrackerDialog = ({ children }: { children: ReactNode, }) => {
+type Props = {
+  children: ReactNode;
+} & (
+  | {
+      mode?: "create";
+    }
+  | {
+      mode: "edit";
+      formValues: z.infer<typeof formSchema>;
+    }
+);
+
+const TrackerDialog = ({ mode = "create", children, formValues }: Props) => {
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const { selectedDate, weekBoundaries } = useTimeContext()
+  const { selectedDate, weekBoundaries } = useTimeContext();
+  console.log(formValues);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
+    defaultValues: formValues ?? {
       projectId: "",
       notes: "",
       projectCategoryId: "",
@@ -72,7 +84,7 @@ const TrackerDialog = ({ children }: { children: ReactNode, }) => {
       projectCategoryId: values.projectCategoryId,
       timeInMinutes: values.timeInMinutes,
     });
-    timeEntriesQueryCache.invalidate(weekBoundaries)
+    timeEntriesQueryCache.invalidate(weekBoundaries);
     closeForm();
   };
 

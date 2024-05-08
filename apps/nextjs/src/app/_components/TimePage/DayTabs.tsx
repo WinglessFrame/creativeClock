@@ -62,14 +62,10 @@ const DayTabs = ({
     item: RouterOutputs["timeEntries"]["getUserTimeEntries"][number],
   ) => {
     try {
-      deleteTimeEntryMutation.mutateAsync({ id: item.id });
-      router.refresh();
-      // getUserEntriesCache.setData({ from: currentWeekBoundaries.startDate, to: currentWeekBoundaries.endDate }, (prev) => {
-      //   console.log({ prev })
-      //   if (prev) {
-      //     return prev.filter((entry) => entry.id !== item.id)
-      //   }
-      // })
+      await deleteTimeEntryMutation.mutateAsync({ id: item.id });
+      getUserEntriesCache.setData(weekBoundaries, (prev) => {
+        if (prev) return prev.filter((entry) => entry.id !== item.id);
+      });
     } catch {
       toast.error("Failed to delete entry");
     }
@@ -147,9 +143,11 @@ const DayTabs = ({
                     </div>
                     <div className="flex items-center gap-4">
                       <span>{convertMinutesToHours(item.timeInMinutes)}</span>
-                      <Button size="icon">
-                        <PencilIcon className="size-4" />
-                      </Button>
+                      <TrackerDialog mode="edit" formValues={item}>
+                        <Button size="icon">
+                          <PencilIcon className="size-4" />
+                        </Button>
+                      </TrackerDialog>
                       <Button
                         onClick={() => deleteEntry(item)}
                         size="icon"
