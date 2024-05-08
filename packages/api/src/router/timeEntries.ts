@@ -1,7 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
-import { and, eq, getTableColumns, gte, lte, schema } from "@acme/db";
+import { and, eq, gte, lte, schema } from "@acme/db";
 
 import { protectedProcedure } from "../trpc";
 

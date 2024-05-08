@@ -1,6 +1,7 @@
 "use client";
 
-import { ReactNode, useMemo, useState } from "react";
+import { randomUUID } from "crypto";
+import { ReactNode, useId, useMemo, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { SubmitHandler, useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
@@ -90,7 +91,7 @@ const TrackerDialog = ({
           timeInHHMM: "",
         },
   });
-  const selectedCategory = useWatch({
+  const selectedProjectId = useWatch({
     control: form.control,
     name: "projectId",
   });
@@ -98,8 +99,11 @@ const TrackerDialog = ({
   const getUserEntriesCache = api.useUtils().timeEntries.getUserTimeEntries;
   const projectsQuery = api.timeEntries.getUserCategories.useQuery();
   const createTimeEntry = api.timeEntries.createTimeEntry.useMutation({
-    onMutate: async (newEntry) => {
-      console.log(newEntry);
+    onError: () => {
+      toast.error("Failed to add entry");
+    },
+    onSettled: () => {
+      getUserEntriesCache.invalidate();
     },
   });
 
@@ -160,11 +164,10 @@ const TrackerDialog = ({
   const categories = useMemo(() => {
     if (projectsQuery.isSuccess) {
       return projectsQuery.data.find(
-        (project) => project.id === selectedCategory,
+        (project) => project.id === selectedProjectId,
       )?.categories;
     }
-    return null;
-  }, [projectsQuery.isSuccess, projectsQuery.data, selectedCategory]);
+  }, [projectsQuery.isSuccess, projectsQuery.data, selectedProjectId]);
 
   return (
     <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
