@@ -46,26 +46,38 @@ const DayTabs = ({
     [currentWeekEntriesQuery.data, selectedDate.date],
   );
 
-  const deleteTimeEntryMutation = api.timeEntries.deleteTimeEntry.useMutation();
   const getUserEntriesCache = api.useUtils().timeEntries.getUserTimeEntries;
+  const { mutateAsync: deleteEntry } =
+    api.timeEntries.deleteTimeEntry.useMutation({
+      onMutate: async ({ id }) => {
+        let entryToDelete:
+          | RouterOutputs["timeEntries"]["getUserTimeEntries"][number]
+          | undefined;
+
+        getUserEntriesCache.setData(weekBoundaries, (prev) => {
+          if (prev)
+            return prev.filter((entry) => {
+              if (entry.id !== id) return entry;
+              entryToDelete = entry;
+            });
+        });
+        return entryToDelete;
+      },
+      onError: (_err, _newTodo, context) => {
+        getUserEntriesCache.setData(weekBoundaries, (prev) => {
+          if (prev && context) return [...prev, context];
+        });
+        toast.error("Failed to delete entry");
+      },
+      onSettled: () => {
+        getUserEntriesCache.invalidate();
+      },
+    });
 
   const onTabChange = (newDayIdx: string) => {
     const selectedDate = weekDates[Number(newDayIdx)];
     if (!selectedDate) throw new Error("Invalid day index");
     pushDateHistoryState(selectedDate);
-  };
-
-  const deleteEntry = async (
-    item: RouterOutputs["timeEntries"]["getUserTimeEntries"][number],
-  ) => {
-    try {
-      await deleteTimeEntryMutation.mutateAsync({ id: item.id });
-      getUserEntriesCache.setData(weekBoundaries, (prev) => {
-        if (prev) return prev.filter((entry) => entry.id !== item.id);
-      });
-    } catch {
-      toast.error("Failed to delete entry");
-    }
   };
 
   const weekTimeSummary = useMemo(

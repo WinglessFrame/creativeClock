@@ -94,10 +94,38 @@ const TrackerDialog = ({
     name: "projectId",
   });
 
+  const getUserEntriesCache = api.useUtils().timeEntries.getUserTimeEntries;
   const projectsQuery = api.timeEntries.getUserCategories.useQuery();
-  const createTimeEntry = api.timeEntries.createTimeEntry.useMutation();
-  const updateTimeEntry = api.timeEntries.updateTimeEntry.useMutation();
-  const timeEntriesQueryCache = api.useUtils().timeEntries.getUserTimeEntries;
+  const createTimeEntry = api.timeEntries.createTimeEntry.useMutation({
+    onMutate: async (newEntry) => {
+      console.log(newEntry);
+    },
+  });
+  const updateTimeEntry = api.timeEntries.updateTimeEntry.useMutation({
+    onMutate: async (updatedEntry) => {
+      getUserEntriesCache.setData(weekBoundaries, (prev) => {
+        if (prev)
+          return prev.map((item) =>
+            item.id === updatedEntry.id
+              ? {
+                  ...item,
+                  notes: updatedEntry.notes ?? "",
+                  timeInMinutes: updatedEntry.timeInMinutes,
+                  projectCategoryId: updatedEntry.projectCategoryId,
+                  projectCategory: {
+                    ...item.projectCategory,
+                    id: updatedEntry.projectCategoryId,
+                    name:
+                      categories?.find(
+                        (item) => item.id === updatedEntry.projectCategoryId,
+                      )?.name ?? "",
+                  },
+                }
+              : item,
+          );
+      });
+    },
+  });
 
   const onSubmit: SubmitHandler<z.infer<typeof timeEntrySchema>> = async (
     values,
@@ -110,7 +138,7 @@ const TrackerDialog = ({
       id: entryId,
     });
 
-    timeEntriesQueryCache.invalidate(weekBoundaries);
+    //timeEntriesQueryCache.invalidate(weekBoundaries);
     setIsFormOpen(false);
   };
 
@@ -236,7 +264,8 @@ const TrackerDialog = ({
           </Form>
           <DialogFooter>
             <Button type="submit">
-              {mode === "create" ? "Create" : "Update"}
+              {mode === "create" && "Create"}
+              {mode === "edit" && "Update"}
             </Button>
           </DialogFooter>
         </form>
