@@ -1,6 +1,7 @@
 "use client";
 
 import { Dispatch, SetStateAction } from "react";
+import { CalendarIcon } from "@heroicons/react/24/solid";
 import { format } from "date-fns";
 
 import { cn } from "@acme/ui";
@@ -12,10 +13,12 @@ const DatePicker = ({
   date,
   setDate,
   className,
+  noText,
 }: {
   date: Date | undefined;
   setDate: Dispatch<SetStateAction<Date | undefined>>;
   className?: string;
+  noText?: boolean;
 }) => {
   return (
     <Popover>
@@ -23,12 +26,14 @@ const DatePicker = ({
         <Button
           variant={"outline"}
           className={cn(
-            "w-fit justify-start text-left font-normal",
+            "w-fit justify-start gap-2 text-left font-normal",
+            noText && "p-2",
             !date && "text-muted-foreground",
             className,
           )}
         >
-          {date ? format(date, "P") : <span>Pick a date</span>}
+          <CalendarIcon className="size-4" />
+          {!noText ? date ? format(date, "P") : <span>Pick a date</span> : null}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0">

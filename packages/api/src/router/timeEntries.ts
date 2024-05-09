@@ -1,13 +1,15 @@
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
-import { and, eq, gte, lte, schema, getTableColumns } from "@acme/db";
+import { and, eq, gte, lte, schema } from "@acme/db";
 
 import { protectedProcedure } from "../trpc";
-import { TRPCError } from "@trpc/server";
 
-const timeBoundariesSchema = z.object({ from: z.date(), to: z.date() }).refine(({ to, from }) => {
-  return to > from;
-})
+const timeBoundariesSchema = z
+  .object({ from: z.date(), to: z.date() })
+  .refine(({ to, from }) => {
+    return to > from;
+  });
 export type TimeBoundaries = z.infer<typeof timeBoundariesSchema>;
 
 export const timeEntriesRouter = {
@@ -16,26 +18,26 @@ export const timeEntriesRouter = {
       with: {
         project: {
           with: {
-            categories: true
-          }
-        }
+            categories: true,
+          },
+        },
       },
-      where: eq(schema.usersToProjects.userId, ctx.session.user.id)
-    })
+      where: eq(schema.usersToProjects.userId, ctx.session.user.id),
+    });
 
     if (!result) {
       throw new TRPCError({
         code: "NOT_FOUND",
         message: "User not found",
-      })
+      });
     }
 
-    return result.map(userToProject => userToProject.project)
+    return result.map((userToProject) => userToProject.project);
   }),
   getUserTimeEntries: protectedProcedure
     .input(timeBoundariesSchema)
-    .query(async ({ ctx, input }) => {
-      return await ctx.db.query.timeEntries.findMany({
+    .query(async ({ ctx, input }) =>
+      ctx.db.query.timeEntries.findMany({
         where: and(
           eq(schema.timeEntries.userId, ctx.session.user.id),
           gte(schema.timeEntries.date, input.from),
@@ -44,12 +46,12 @@ export const timeEntriesRouter = {
         with: {
           projectCategory: {
             with: {
-              project: true
-            }
-          }
-        }
-      })
-    }),
+              project: true,
+            },
+          },
+        },
+      }),
+    ),
   createTimeEntry: protectedProcedure
     .input(
       z.object({
@@ -59,21 +61,37 @@ export const timeEntriesRouter = {
         timeInMinutes: z.number().min(1),
       }),
     )
-    .mutation(({ ctx, input }) => {
-      return ctx.db.insert(schema.timeEntries).values([
+    .mutation(({ ctx, input }) =>
+      ctx.db.insert(schema.timeEntries).values([
         {
           ...input,
           userId: ctx.session.user.id,
         },
-      ]).returning();
-    }),
+      ]),
+    ),
+
+  updateTimeEntry: protectedProcedure
+    .input(
+      z.object({
+        date: z.date(),
+        notes: z.string().optional(),
+        projectCategoryId: z.string(),
+        timeInMinutes: z.number().min(1),
+        id: z.string(),
+      }),
+    )
+    .mutation(({ ctx, input }) =>
+      ctx.db
+        .update(schema.timeEntries)
+        .set(input)
+        .where(eq(schema.timeEntries.id, input.id)),
+    ),
 
   deleteTimeEntry: protectedProcedure
     .input(z.object({ id: z.string() }))
-    .mutation(({ ctx, input }) => {
-      return ctx.db
+    .mutation(({ ctx, input }) =>
+      ctx.db
         .delete(schema.timeEntries)
-        .where(eq(schema.timeEntries.id, input.id))
-        .returning();
-    }),
+        .where(eq(schema.timeEntries.id, input.id)),
+    ),
 };

@@ -10,12 +10,7 @@ import {
   PaginationItem,
 } from "@acme/ui/pagination";
 
-import {
-  getDateSlug,
-  getNextDay,
-  getPrevDay,
-  pushDateHistoryState,
-} from "~/utils";
+import { getNextDay, getPrevDay, pushDateHistoryState } from "~/utils";
 import { useTimeContext } from "./timeContext.client";
 
 const DayPagination = () => {

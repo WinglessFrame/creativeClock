@@ -4,13 +4,23 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
 } from "react";
 
 import { TimeBoundaries } from "@acme/api";
 
-import { getDayIndex, getWeekBoundaries, getWeekDates } from "../../../utils";
+import { api } from "~/trpc/react";
+import {
+  getDayIndex,
+  getNextDay,
+  getPrevDay,
+  getWeekBoundaries,
+  getWeekDates,
+  isFirstWeekDay,
+  isLastWeekDay,
+} from "../../../utils";
 
 type TimeContextType = {
   selectedDate: { date: Date; idxWithinTheWeek: number };
@@ -48,6 +58,19 @@ export const TimeContextProvider = ({
     date: initialDate,
     idxWithinTheWeek: getDayInTheWeekEntry(initialDate),
   });
+
+  const getUserEntriesCache = api.useUtils().timeEntries.getUserTimeEntries;
+
+  useEffect(() => {
+    if (isFirstWeekDay(selectedDate.idxWithinTheWeek)) {
+      const prevDay = getPrevDay(selectedDate.date);
+      getUserEntriesCache.prefetch(getWeekBoundaries(prevDay));
+    }
+    if (isLastWeekDay(selectedDate.idxWithinTheWeek)) {
+      const nextDay = getNextDay(selectedDate.date);
+      getUserEntriesCache.prefetch(getWeekBoundaries(nextDay));
+    }
+  }, [selectedDate.idxWithinTheWeek]);
 
   const { currentWeekDates, weekBoundaries } = useMemo(() => {
     const weekBoundaries = getWeekBoundaries(selectedDate.date);

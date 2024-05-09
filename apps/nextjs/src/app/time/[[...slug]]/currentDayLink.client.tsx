@@ -1,23 +1,9 @@
 "use client";
 
 import React, { useMemo } from "react";
-import Link from "next/link";
 
 import { useTimeContext } from "../../_components/TimePage/timeContext.client";
-import {
-  areSameDates,
-  getDateSlug,
-  pushDateHistoryState,
-} from "../../../utils";
-
-function getFullDay(date: Date) {
-  const formatter = new Intl.DateTimeFormat("en-US", {
-    weekday: "short",
-    day: "numeric",
-    month: "short",
-  });
-  return formatter.format(date);
-}
+import { areSameDates, getFullDay, pushDateHistoryState } from "../../../utils";
 
 export const CurrentDayLink = () => {
   const { selectedDate } = useTimeContext();
@@ -35,7 +21,7 @@ export const CurrentDayLink = () => {
       </h1>
       {!isSelectedACurrentDate && (
         <span
-          className="underline underline-offset-4"
+          className="cursor-pointer underline underline-offset-4 hover:scale-[1.01]"
           onClick={() => {
             pushDateHistoryState(new Date());
           }}

@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useMemo } from "react";
 import { PencilIcon, TrashIcon } from "@heroicons/react/24/solid";
 
 import { RouterOutputs } from "@acme/api";
@@ -12,7 +11,7 @@ import { toast } from "@acme/ui/toast";
 
 import {
   areSameDates,
-  convertMinutesToHours,
+  convertMinutesToHHMM,
   getShortDay,
   pushDateHistoryState,
 } from "~/utils";
@@ -22,24 +21,20 @@ import ProgressBar from "../utils/ProgressBar";
 import { useTimeContext } from "./timeContext.client";
 
 const DayTabs = ({
-  initialWeekEntriesData: currentWeekEntriesData,
+  initialWeekEntriesData,
   initialDate,
 }: {
   initialWeekEntriesData: RouterOutputs["timeEntries"]["getUserTimeEntries"];
   initialDate: Date;
 }) => {
-  const router = useRouter();
-
   const { selectedDate, weekBoundaries, weekDates } = useTimeContext();
 
   const currentWeekEntriesQuery = api.timeEntries.getUserTimeEntries.useQuery(
     weekBoundaries,
     {
-      initialData: () => {
-        if (weekDates.find((date) => areSameDates(date, initialDate))) {
-          return currentWeekEntriesData;
-        }
-      },
+      initialData: () =>
+        weekDates.find((date) => areSameDates(date, initialDate)) &&
+        initialWeekEntriesData,
     },
   );
 
@@ -51,31 +46,51 @@ const DayTabs = ({
     [currentWeekEntriesQuery.data, selectedDate.date],
   );
 
-  const deleteTimeEntryMutation = api.timeEntries.deleteTimeEntry.useMutation();
   const getUserEntriesCache = api.useUtils().timeEntries.getUserTimeEntries;
+  const { mutateAsync: deleteEntry } =
+    api.timeEntries.deleteTimeEntry.useMutation({
+      onMutate: async ({ id }) => {
+        let entryToDelete:
+          | RouterOutputs["timeEntries"]["getUserTimeEntries"][number]
+          | undefined;
+
+        getUserEntriesCache.setData(weekBoundaries, (prev) => {
+          if (prev)
+            return prev.filter((entry) => {
+              if (entry.id !== id) return entry;
+              entryToDelete = entry;
+            });
+        });
+        return entryToDelete;
+      },
+      onError: (_err, _newTodo, context) => {
+        getUserEntriesCache.setData(weekBoundaries, (prev) => {
+          if (prev && context) return [...prev, context];
+        });
+        toast.error("Failed to delete entry");
+      },
+      onSettled: () => {
+        getUserEntriesCache.invalidate();
+      },
+    });
 
   const onTabChange = (newDayIdx: string) => {
-    const selectedDate = weekDates[Number(newDayIdx)];
+    const selectedDate = weekDates[+newDayIdx];
     if (!selectedDate) throw new Error("Invalid day index");
     pushDateHistoryState(selectedDate);
   };
 
-  const deleteEntry = async (
-    item: RouterOutputs["timeEntries"]["getUserTimeEntries"][number],
-  ) => {
-    try {
-      deleteTimeEntryMutation.mutateAsync({ id: item.id });
-      router.refresh();
-      // getUserEntriesCache.setData({ from: currentWeekBoundaries.startDate, to: currentWeekBoundaries.endDate }, (prev) => {
-      //   console.log({ prev })
-      //   if (prev) {
-      //     return prev.filter((entry) => entry.id !== item.id)
-      //   }
-      // })
-    } catch {
-      toast.error("Failed to delete entry");
-    }
-  };
+  const weekTimeSummary = useMemo(
+    () =>
+      currentWeekEntriesQuery.data
+        ? convertMinutesToHHMM(
+            currentWeekEntriesQuery.data
+              ?.map((item) => item.timeInMinutes)
+              .reduce((prev, cur) => prev + cur, 0),
+          )
+        : "Loading",
+    [currentWeekEntriesQuery.data],
+  );
 
   return (
     <Tabs
@@ -97,7 +112,7 @@ const DayTabs = ({
                 currentWeekEntriesQuery.data?.find((item) =>
                   areSameDates(item.date, day),
                 )?.timeInMinutes
-                  ? convertMinutesToHours(
+                  ? convertMinutesToHHMM(
                       currentWeekEntriesQuery.data?.find?.((item) =>
                         areSameDates(item.date, day),
                       )?.timeInMinutes ?? 0,
@@ -112,15 +127,7 @@ const DayTabs = ({
             className="relative mb-2 ml-auto flex w-24 flex-col items-end rounded-none border-b-2 border-b-transparent bg-transparent px-0 font-semibold text-muted-foreground shadow-none transition-none data-[state=active]:border-b-primary data-[state=active]:text-foreground data-[state=active]:shadow-none"
           >
             <span>{"Week total"}</span>
-            <span className="text-xs">
-              {currentWeekEntriesData
-                ? convertMinutesToHours(
-                    currentWeekEntriesData
-                      .map((item) => item.timeInMinutes)
-                      .reduce((prev, cur) => prev + cur, 0),
-                  )
-                : "00:00"}
-            </span>
+            <span className="text-xs">{weekTimeSummary}</span>
           </TabsTrigger>
         </TabsList>
       </div>
@@ -148,10 +155,21 @@ const DayTabs = ({
                       <span className="text-xs">{item.notes}</span>
                     </div>
                     <div className="flex items-center gap-4">
-                      <span>{convertMinutesToHours(item.timeInMinutes)}</span>
-                      <Button size="icon">
-                        <PencilIcon className="size-4" />
-                      </Button>
+                      <span>{convertMinutesToHHMM(item.timeInMinutes)}</span>
+                      <TrackerDialog
+                        mode="edit"
+                        formValues={{
+                          projectId: item.projectCategory.projectId,
+                          notes: item.notes ?? "",
+                          projectCategoryId: item.projectCategoryId,
+                          timeInMinutes: item.timeInMinutes,
+                        }}
+                        entryId={item.id}
+                      >
+                        <Button size="icon">
+                          <PencilIcon className="size-4" />
+                        </Button>
+                      </TrackerDialog>
                       <Button
                         onClick={() => deleteEntry(item)}
                         size="icon"

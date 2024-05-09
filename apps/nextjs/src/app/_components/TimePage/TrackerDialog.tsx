@@ -1,10 +1,12 @@
 "use client";
 
-import { ReactNode, useMemo, useState } from "react";
+import { randomUUID } from "crypto";
+import { ReactNode, useId, useMemo, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { SubmitHandler, useForm, useWatch } from "react-hook-form";
 import { z } from "zod";
 
+import { RouterOutputs } from "@acme/api";
 import { Button } from "@acme/ui/button";
 import {
   Dialog,
@@ -22,7 +24,6 @@ import {
   FormLabel,
 } from "@acme/ui/form";
 import { Input } from "@acme/ui/input";
-import { Label } from "@acme/ui/label";
 import {
   Select,
   SelectContent,
@@ -31,75 +32,154 @@ import {
   SelectValue,
 } from "@acme/ui/select";
 import { Textarea } from "@acme/ui/textarea";
+import { toast } from "@acme/ui/toast";
 
+import HHMMStringSchema from "~/schemas/HHMMStringSchema";
+import {
+  convertHHMMToMinutes,
+  convertMinutesToHHMM,
+  getFullDay,
+} from "~/utils";
 import { api } from "../../../trpc/react";
-import { useRouter } from "next/navigation";
 import { useTimeContext } from "./timeContext.client";
 
-const formSchema = z.object({
+type Props = {
+  children: ReactNode;
+} & (
+  | {
+      mode?: "create";
+    }
+  | {
+      mode: "edit";
+      entryId: RouterOutputs["timeEntries"]["getUserTimeEntries"][number]["id"];
+      formValues: {
+        projectId: string;
+        notes: string;
+        projectCategoryId: string;
+        timeInMinutes: number;
+      };
+    }
+);
+
+const timeEntrySchema = z.object({
   projectId: z.string().min(1),
   projectCategoryId: z.string().min(1),
-  timeInMinutes: z.coerce.number().min(1),
+  timeInHHMM: HHMMStringSchema.transform(convertHHMMToMinutes),
   notes: z.string().optional(),
 });
 
-const TrackerDialog = ({ children }: { children: ReactNode, }) => {
+const TrackerDialog = ({
+  mode = "create",
+  children,
+  formValues,
+  entryId,
+}: Props) => {
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const { selectedDate, weekBoundaries } = useTimeContext()
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      projectId: "",
-      notes: "",
-      projectCategoryId: "",
-      timeInMinutes: 0,
-    },
+  const { selectedDate, weekBoundaries } = useTimeContext();
+
+  const form = useForm<z.infer<typeof timeEntrySchema>>({
+    resolver: zodResolver(timeEntrySchema),
+    defaultValues: formValues
+      ? {
+          ...formValues,
+          timeInHHMM: convertMinutesToHHMM(formValues.timeInMinutes),
+        }
+      : {
+          projectId: "",
+          notes: "",
+          projectCategoryId: "",
+          timeInHHMM: "",
+        },
   });
-
-  const createTimeEntry = api.timeEntries.createTimeEntry.useMutation();
-  const timeEntriesQueryCache = api.useUtils().timeEntries.getUserTimeEntries;
-
-  const closeForm = () => {
-    setIsFormOpen(false);
-  };
-
-  const onSubmit: SubmitHandler<z.infer<typeof formSchema>> = async (
-    values,
-  ) => {
-    await createTimeEntry.mutateAsync({
-      date: selectedDate.date,
-      notes: values.notes,
-      projectCategoryId: values.projectCategoryId,
-      timeInMinutes: values.timeInMinutes,
-    });
-    timeEntriesQueryCache.invalidate(weekBoundaries)
-    closeForm();
-  };
-
-  const selectedCategory = useWatch({
+  const selectedProjectId = useWatch({
     control: form.control,
     name: "projectId",
   });
 
+  const getUserEntriesCache = api.useUtils().timeEntries.getUserTimeEntries;
   const projectsQuery = api.timeEntries.getUserCategories.useQuery();
+  const createTimeEntry = api.timeEntries.createTimeEntry.useMutation({
+    onError: () => {
+      toast.error("Failed to add entry");
+    },
+    onSettled: () => {
+      getUserEntriesCache.invalidate();
+    },
+  });
+
+  const updateTimeEntry = api.timeEntries.updateTimeEntry.useMutation({
+    onMutate: async (updatedEntry) => {
+      getUserEntriesCache.setData(weekBoundaries, (prev) => {
+        let entryToUpdate:
+          | RouterOutputs["timeEntries"]["getUserTimeEntries"][number]
+          | undefined;
+        if (prev)
+          return prev.map((item) => {
+            if (item.id === updatedEntry.id) {
+              entryToUpdate = item;
+              return {
+                ...item,
+                notes: updatedEntry.notes ?? "",
+                timeInMinutes: updatedEntry.timeInMinutes,
+                projectCategoryId: updatedEntry.projectCategoryId,
+                projectCategory: {
+                  ...item.projectCategory,
+                  id: updatedEntry.projectCategoryId,
+                  name:
+                    categories?.find(
+                      (item) => item.id === updatedEntry.projectCategoryId,
+                    )?.name ?? "",
+                },
+              };
+            }
+
+            return item;
+          });
+      });
+    },
+    onError: (_err, _newTodo, context) => {
+      getUserEntriesCache.setData(weekBoundaries, (prev) => {
+        if (prev && context) return [...prev, context];
+      });
+      toast.error("Failed to update entry");
+    },
+    onSettled: () => {
+      getUserEntriesCache.invalidate();
+    },
+  });
+
+  const onSubmit: SubmitHandler<z.infer<typeof timeEntrySchema>> = async (
+    values,
+  ) => {
+    setIsFormOpen(false);
+    await (mode === "create" ? createTimeEntry : updateTimeEntry).mutateAsync({
+      date: selectedDate.date,
+      notes: values.notes,
+      projectCategoryId: values.projectCategoryId,
+      timeInMinutes: values.timeInHHMM,
+      id: entryId,
+    });
+  };
 
   const categories = useMemo(() => {
     if (projectsQuery.isSuccess) {
       return projectsQuery.data.find(
-        (project) => project.id === selectedCategory,
+        (project) => project.id === selectedProjectId,
       )?.categories;
     }
-    return null;
-  }, [projectsQuery.isSuccess, projectsQuery.data, selectedCategory]);
+  }, [projectsQuery.isSuccess, projectsQuery.data, selectedProjectId]);
 
   return (
     <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="sm:max-w-[800px]">
+        <DialogHeader>
+          <DialogTitle>
+            {mode === "create" ? "New time entry for" : "Edit time entry for"}{" "}
+            {getFullDay(selectedDate.date)}
+          </DialogTitle>
+        </DialogHeader>
         <form onSubmit={form.handleSubmit(onSubmit)}>
-          <DialogHeader>
-            <DialogTitle>Track time</DialogTitle>
-          </DialogHeader>
           <Form {...form}>
             <div
               id="time-entry-dialog"
@@ -140,7 +220,7 @@ const TrackerDialog = ({ children }: { children: ReactNode, }) => {
                 name="projectCategoryId"
                 render={({ field }) => (
                   <FormItem className="grid grid-cols-4 items-center gap-4">
-                    <Label className="text-right">Task</Label>
+                    <FormLabel className="text-right">Task</FormLabel>
                     <FormControl>
                       <Select
                         disabled={!categories || !categories.length}
@@ -171,7 +251,7 @@ const TrackerDialog = ({ children }: { children: ReactNode, }) => {
                 name="notes"
                 render={({ field }) => (
                   <FormItem className="grid grid-cols-4 items-center gap-4">
-                    <Label className="text-right">Notes</Label>
+                    <FormLabel className="text-right">Notes</FormLabel>
                     <FormControl>
                       <Textarea
                         {...field}
@@ -184,18 +264,15 @@ const TrackerDialog = ({ children }: { children: ReactNode, }) => {
               />
               <FormField
                 control={form.control}
-                name="timeInMinutes"
+                name="timeInHHMM"
                 render={({ field }) => (
                   <FormItem className="grid grid-cols-4 items-center gap-4">
-                    <Label className="text-right">Time in minutes</Label>
+                    <FormLabel className="text-right">Time</FormLabel>
                     <FormControl>
                       <Input
                         {...field}
-                        type="number"
                         className="col-span-3"
-                        placeholder="0"
-                        step="1"
-                        min="0"
+                        placeholder="00:00"
                       />
                     </FormControl>
                   </FormItem>
@@ -204,7 +281,10 @@ const TrackerDialog = ({ children }: { children: ReactNode, }) => {
             </div>
           </Form>
           <DialogFooter>
-            <Button type="submit">Create</Button>
+            <Button type="submit">
+              {mode === "create" && "Create"}
+              {mode === "edit" && "Update"}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>
