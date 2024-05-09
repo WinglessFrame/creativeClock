@@ -1,13 +1,11 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import Navigation from "../utils/Navigation";
 
 const TrackerViewModePicker = () => {
   const pathname = usePathname();
-  console.log(pathname);
 
   return (
     <Navigation

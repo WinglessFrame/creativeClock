@@ -15,10 +15,10 @@ export function areSameDates(date1: Date, date2: Date) {
   );
 }
 
-export function parseDateFromParams(params: string[] | undefined) {
-  if (!params) return new Date();
+export function parseDateFromParams(slug: string[] | undefined) {
+  if (!slug) return new Date();
 
-  const parsedDate = new Date(Date.parse(params.join("/")));
+  const parsedDate = new Date(Date.parse(slug.join("/")));
   if (!isNaN(parsedDate.getTime())) return parsedDate;
 }
 

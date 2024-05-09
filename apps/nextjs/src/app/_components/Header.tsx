@@ -13,12 +13,12 @@ const Header = ({ authButton }: { authButton: ReactElement }) => {
         <Navigation
           items={[
             {
-              href: "/time" as const,
+              href: "/time",
               label: "Time",
               active: pathname.startsWith("/time"),
             },
             {
-              href: "/expenses" as const,
+              href: "/expenses",
               label: "Expenses",
               active: pathname.startsWith("/expenses"),
             },

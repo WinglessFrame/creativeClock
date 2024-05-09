@@ -12,11 +12,7 @@ import { toast } from "@acme/ui/toast";
 import {
   areSameDates,
   convertMinutesToHHMM,
-  getPrevDay,
   getShortDay,
-  getWeekBoundaries,
-  isFirstWeekDay,
-  isLastWeekDay,
   pushDateHistoryState,
 } from "~/utils";
 import TrackerDialog from "../../_components/TimePage/TrackerDialog";

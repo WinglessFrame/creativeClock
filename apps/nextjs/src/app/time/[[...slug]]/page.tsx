@@ -11,11 +11,12 @@ import { TimeContextProvider } from "../../_components/TimePage/timeContext.clie
 import { CurrentDayLink } from "./currentDayLink.client";
 
 export default async function TimePage({
-  params,
+  params: { slug },
 }: {
   params: { slug: string[] | undefined };
 }) {
-  const parsedDate = parseDateFromParams(params.slug);
+  const parsedDate = parseDateFromParams(slug);
+
   if (!parsedDate) notFound();
 
   const currentWeekBoundaries = getWeekBoundaries(parsedDate);
@@ -33,7 +34,7 @@ export default async function TimePage({
         </div>
         <div className="flex items-center gap-4">
           <TrackingDayPicker />
-          <TrackerViewModePicker mode="days" />
+          <TrackerViewModePicker />
         </div>
       </div>
       <DayTabs
