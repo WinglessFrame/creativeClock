@@ -35,7 +35,7 @@ import {
 import { Textarea } from "@acme/ui/textarea";
 
 import formatMoneyInput from "~/utils/formatMoneyInput";
-import DatePicker from "../DatePicker";
+import DatePicker from "../DatePicker.client";
 
 const formSchema = z.object({
   date: z.date(),

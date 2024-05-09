@@ -3,7 +3,7 @@ import { TimeBoundaries } from "@acme/api";
 import HHMMStringSchema from "~/schemas/HHMMStringSchema";
 
 export const pushDateHistoryState = (date: Date) => {
-  const newUrl = `/time/${getDateSlug(date)}`;
+  const newUrl = `/time/days/${getDateSlug(date)}`;
   history.pushState({ newParams: newUrl.split("/") }, "", newUrl);
 };
 

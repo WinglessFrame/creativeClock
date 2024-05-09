@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import DayPagination from "~/app/_components/TimePage/DayPagination";
 import DayTabs from "~/app/_components/TimePage/DayTabs";
 import NavigationEvents from "~/app/_components/TimePage/NavigationEvents";
+import TrackingDayPicker from "~/app/_components/TimePage/TrackingDatePicker.client";
 import { api } from "~/trpc/server";
 import { getWeekBoundaries, parseDateFromParams } from "~/utils";
 import { TimeContextProvider } from "../../_components/TimePage/timeContext.client";
@@ -24,11 +25,19 @@ export default async function TimePage({
 
   return (
     <TimeContextProvider initialDate={parsedDate}>
-      <div className="mb-10 flex items-center gap-4">
-        <DayPagination />
-        <CurrentDayLink />
+      <div className="mb-10 flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <DayPagination />
+          <CurrentDayLink />
+        </div>
+        <div className="flex items-center gap-4">
+          <TrackingDayPicker />
+        </div>
       </div>
-      <DayTabs initialDate={parsedDate} initialWeekEntriesData={currentWeekEntries} />
+      <DayTabs
+        initialDate={parsedDate}
+        initialWeekEntriesData={currentWeekEntries}
+      />
       <NavigationEvents />
     </TimeContextProvider>
   );

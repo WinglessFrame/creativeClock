@@ -21,7 +21,7 @@ export const CurrentDayLink = () => {
       </h1>
       {!isSelectedACurrentDate && (
         <span
-          className="underline underline-offset-4"
+          className="cursor-pointer underline underline-offset-4 hover:scale-[1.01]"
           onClick={() => {
             pushDateHistoryState(new Date());
           }}
