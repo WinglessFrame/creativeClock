@@ -12,7 +12,12 @@ const config = {
       {
         source: '/',
         destination: '/time',
-        permanent: true,
+        permanent: false,
+      },
+      { 
+        source: '/time/days',
+        destination: '/time',
+        permanent: false,
       },
     ]
   },

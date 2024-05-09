@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import DayPagination from "~/app/_components/TimePage/DayPagination";
 import DayTabs from "~/app/_components/TimePage/DayTabs";
 import NavigationEvents from "~/app/_components/TimePage/NavigationEvents";
+import TrackerViewModePicker from "~/app/_components/TimePage/TrackerViewModePicker";
 import TrackingDayPicker from "~/app/_components/TimePage/TrackingDatePicker.client";
 import { api } from "~/trpc/server";
 import { getWeekBoundaries, parseDateFromParams } from "~/utils";
@@ -32,6 +33,7 @@ export default async function TimePage({
         </div>
         <div className="flex items-center gap-4">
           <TrackingDayPicker />
+          <TrackerViewModePicker mode="days" />
         </div>
       </div>
       <DayTabs
