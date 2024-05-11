@@ -151,7 +151,12 @@ const TrackerDialog = ({
   const onSubmit: SubmitHandler<z.infer<typeof timeEntrySchema>> = async (
     values,
   ) => {
+    if (values.timeInHHMM > 8 * 60) {
+      const audio = new Audio("/sounds/dimbi4.ogg");
+      audio.play();
+    }
     setIsFormOpen(false);
+
     await (mode === "create" ? createTimeEntry : updateTimeEntry).mutateAsync({
       date: selectedDate.date,
       notes: values.notes,
