@@ -1,8 +1,6 @@
 {
-  "version": "5",
+  "version": "6",
   "dialect": "sqlite",
-  "id": "9bc365f2-7cab-4b2c-9cb7-7afee9d83045",
-  "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "creative_clock_account": {
       "name": "creative_clock_account",
@@ -90,15 +88,15 @@
         "creative_clock_account_userId_creative_clock_user_id_fk": {
           "name": "creative_clock_account_userId_creative_clock_user_id_fk",
           "tableFrom": "creative_clock_account",
-          "tableTo": "creative_clock_user",
           "columnsFrom": [
             "userId"
           ],
+          "tableTo": "creative_clock_user",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {
@@ -142,15 +140,15 @@
         "creative_clock_session_userId_creative_clock_user_id_fk": {
           "name": "creative_clock_session_userId_creative_clock_user_id_fk",
           "tableFrom": "creative_clock_session",
-          "tableTo": "creative_clock_user",
           "columnsFrom": [
             "userId"
           ],
+          "tableTo": "creative_clock_user",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -241,8 +239,9 @@
   },
   "enums": {},
   "_meta": {
-    "schemas": {},
     "tables": {},
     "columns": {}
-  }
+  },
+  "id": "9bc365f2-7cab-4b2c-9cb7-7afee9d83045",
+  "prevId": "00000000-0000-0000-0000-000000000000"
 }

@@ -5,11 +5,9 @@ import { and, eq, gte, lte, schema } from "@acme/db";
 
 import { protectedProcedure } from "../trpc";
 
-const timeBoundariesSchema = z
+export const timeBoundariesSchema = z
   .object({ from: z.date(), to: z.date() })
-  .refine(({ to, from }) => {
-    return to > from;
-  });
+  .refine(({ to, from }) => to > from);
 export type TimeBoundaries = z.infer<typeof timeBoundariesSchema>;
 
 export const timeEntriesRouter = {

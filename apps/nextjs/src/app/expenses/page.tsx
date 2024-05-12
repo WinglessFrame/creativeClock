@@ -1,3 +1,5 @@
+import { PaperClipIcon } from "@heroicons/react/24/solid";
+
 import { Button } from "@acme/ui/button";
 import { Separator } from "@acme/ui/separator";
 import {
@@ -9,54 +11,22 @@ import {
   TableHeader,
   TableRow,
 } from "@acme/ui/table";
-import { PaperClipIcon } from "@heroicons/react/24/solid"
+
+import { api } from "~/trpc/server";
+import { getFullDay, getWeekBoundaries } from "~/utils";
 import formatMoneyInput from "~/utils/formatMoneyInput";
 import ExpensesDialog from "../_components/ExpensesPage/ExpensesDialog";
 
-const invoices = [
-  {
-    date: "Mon, 08 Apr",
-    project: "CreativeIT",
-    category: "Moving",
-    amount: 250.1,
-    notes: "Testtetsadsadasdas",
-    receipt: "",
-  },
-  {
-    date: "Mon, 08 Apr",
-    project: "CreativeIT",
-    category: "Moving",
-    amount: 250.1,
-    notes: "Testtetsadsadasdas",
-    receipt: "test",
-  },
-  {
-    date: "Mon, 08 Apr",
-    project: "CreativeIT",
-    category: "Moving",
-    amount: 250.1,
-    notes: "Testtetsadsadasdas",
-    receipt: "",
-  },
-  {
-    date: "Mon, 08 Apr",
-    project: "CreativeIT",
-    category: "Moving",
-    amount: 250.1,
-    notes: "Testtetsadsadasdas",
-    receipt: "",
-  },
-];
-
 const period = "08 – 14 Apr 2024";
 
-export default function ExpensesPage() {
+export default async function ExpensesPage() {
+  const userExpenses = await api.expenses.getUserExpenses();
+
   return (
     <div className=" flex flex-col gap-10">
       <ExpensesDialog>
         <Button className="w-fit">+ Track expenses</Button>
       </ExpensesDialog>
-
       <ul className="flex flex-col gap-20">
         <li>
           <Table>
@@ -66,22 +36,28 @@ export default function ExpensesPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {invoices.map((invoice) => (
-                <TableRow key={invoice.date}>
-                  <TableCell className="font-medium">{invoice.date}</TableCell>
+              {userExpenses.map((expense) => (
+                <TableRow key={expense.id}>
+                  <TableCell className="font-medium">
+                    {getFullDay(expense.date)}
+                  </TableCell>
                   <TableCell>
                     <div className="flex flex-col gap-1">
-                      <span className="font-bold">{invoice.project}</span>
-                      <span className="text-sm">{invoice.category}</span>
-                      <span className="text-xs">{invoice.notes}</span>
+                      <span className="font-bold">
+                        {expense.projectExpenseCategory.project.name}
+                      </span>
+                      <span className="text-sm">
+                        {expense.projectExpenseCategory.name}
+                      </span>
+                      <span className="text-xs">{expense.notes}</span>
                     </div>
                   </TableCell>
                   <TableCell className="text-right">
-                    €{formatMoneyInput(invoice.amount)}
+                    €{formatMoneyInput(expense.amount)}
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center justify-end gap-4">
-                      {invoice.receipt && (
+                      {expense.receipt && (
                         <Button>
                           <PaperClipIcon className="w-4" />
                         </Button>
@@ -100,157 +76,7 @@ export default function ExpensesPage() {
                 <TableCell className="text-right">
                   €
                   {formatMoneyInput(
-                    invoices.reduce((prev, cur) => prev + cur.amount, 0),
-                  )}
-                </TableCell>
-                <TableCell />
-              </TableRow>
-            </TableFooter>
-          </Table>
-        </li>
-        <li>
-          <Table>
-            <TableHeader>
-              <TableRow className="sticky top-0">
-                <TableHead colSpan={5}>{period}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {invoices.map((invoice) => (
-                <TableRow key={invoice.date}>
-                  <TableCell className="font-medium">{invoice.date}</TableCell>
-                  <TableCell>
-                    <div className="flex flex-col gap-1">
-                      <span className="font-bold">{invoice.project}</span>
-                      <span className="text-sm">{invoice.category}</span>
-                      <span className="text-xs">{invoice.notes}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    €{formatMoneyInput(invoice.amount)}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center justify-end gap-4">
-                      {invoice.receipt && (
-                        <Button>
-                          <PaperClipIcon className="w-4" />
-                        </Button>
-                      )}
-                      <ExpensesDialog>
-                        <Button>Edit</Button>
-                      </ExpensesDialog>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-            <TableFooter>
-              <TableRow>
-                <TableCell colSpan={2}>Total</TableCell>
-                <TableCell className="text-right">
-                  €
-                  {formatMoneyInput(
-                    invoices.reduce((prev, cur) => prev + cur.amount, 0),
-                  )}
-                </TableCell>
-                <TableCell />
-              </TableRow>
-            </TableFooter>
-          </Table>
-        </li>
-        <li>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead colSpan={5}>{period}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {invoices.map((invoice) => (
-                <TableRow key={invoice.date}>
-                  <TableCell className="font-medium">{invoice.date}</TableCell>
-                  <TableCell>
-                    <div className="flex flex-col gap-1">
-                      <span className="font-bold">{invoice.project}</span>
-                      <span className="text-sm">{invoice.category}</span>
-                      <span className="text-xs">{invoice.notes}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    €{formatMoneyInput(invoice.amount)}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center justify-end gap-4">
-                      {invoice.receipt && (
-                        <Button>
-                          <PaperClipIcon className="w-4" />
-                        </Button>
-                      )}
-                      <ExpensesDialog>
-                        <Button>Edit</Button>
-                      </ExpensesDialog>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-            <TableFooter>
-              <TableRow>
-                <TableCell colSpan={2}>Total</TableCell>
-                <TableCell className="text-right">
-                  €
-                  {formatMoneyInput(
-                    invoices.reduce((prev, cur) => prev + cur.amount, 0),
-                  )}
-                </TableCell>
-                <TableCell />
-              </TableRow>
-            </TableFooter>
-          </Table>
-        </li>
-        <li>
-          <Table>
-            <TableHeader>
-              <TableRow className="sticky top-0">
-                <TableHead colSpan={5}>{period}</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {invoices.map((invoice) => (
-                <TableRow key={invoice.date}>
-                  <TableCell className="font-medium">{invoice.date}</TableCell>
-                  <TableCell>
-                    <div className="flex flex-col gap-1">
-                      <span className="font-bold">{invoice.project}</span>
-                      <span className="text-sm">{invoice.category}</span>
-                      <span className="text-xs">{invoice.notes}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    €{formatMoneyInput(invoice.amount)}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center justify-end gap-4">
-                      {invoice.receipt && (
-                        <Button>
-                          <PaperClipIcon className="w-4" />
-                        </Button>
-                      )}
-                      <ExpensesDialog>
-                        <Button>Edit</Button>
-                      </ExpensesDialog>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-            <TableFooter>
-              <TableRow>
-                <TableCell colSpan={2}>Total</TableCell>
-                <TableCell className="text-right">
-                  €
-                  {formatMoneyInput(
-                    invoices.reduce((prev, cur) => prev + cur.amount, 0),
+                    userExpenses.reduce((prev, cur) => prev + cur.amount, 0),
                   )}
                 </TableCell>
                 <TableCell />

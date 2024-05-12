@@ -1,6 +1,8 @@
 {
   "version": "6",
   "dialect": "sqlite",
+  "id": "75de67cf-1cec-4c3b-b160-1717fede77aa",
+  "prevId": "ec670537-b1ef-4da3-9487-6f9592b018f4",
   "tables": {
     "creative_clock_account": {
       "name": "creative_clock_account",
@@ -88,15 +90,15 @@
         "creative_clock_account_userId_creative_clock_user_id_fk": {
           "name": "creative_clock_account_userId_creative_clock_user_id_fk",
           "tableFrom": "creative_clock_account",
+          "tableTo": "creative_clock_user",
           "columnsFrom": [
             "userId"
           ],
-          "tableTo": "creative_clock_user",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {
@@ -140,15 +142,15 @@
         "creative_clock_session_userId_creative_clock_user_id_fk": {
           "name": "creative_clock_session_userId_creative_clock_user_id_fk",
           "tableFrom": "creative_clock_session",
+          "tableTo": "creative_clock_user",
           "columnsFrom": [
             "userId"
           ],
-          "tableTo": "creative_clock_user",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -236,6 +238,142 @@
       },
       "uniqueConstraints": {}
     },
+    "creative_clock_expenses": {
+      "name": "creative_clock_expenses",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "userId": {
+          "name": "userId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "notes": {
+          "name": "notes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "receipt": {
+          "name": "receipt",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "isApproved": {
+          "name": "isApproved",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "amount": {
+          "name": "amount",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "date": {
+          "name": "date",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "projectExpenseCategoryId": {
+          "name": "projectExpenseCategoryId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "creative_clock_expenses_userId_creative_clock_user_id_fk": {
+          "name": "creative_clock_expenses_userId_creative_clock_user_id_fk",
+          "tableFrom": "creative_clock_expenses",
+          "tableTo": "creative_clock_user",
+          "columnsFrom": [
+            "userId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "creative_clock_expenses_projectExpenseCategoryId_creative_clock_projectExpenseCategory_id_fk": {
+          "name": "creative_clock_expenses_projectExpenseCategoryId_creative_clock_projectExpenseCategory_id_fk",
+          "tableFrom": "creative_clock_expenses",
+          "tableTo": "creative_clock_projectExpenseCategory",
+          "columnsFrom": [
+            "projectExpenseCategoryId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
+    "creative_clock_projectExpenseCategory": {
+      "name": "creative_clock_projectExpenseCategory",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "projectId": {
+          "name": "projectId",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "creative_clock_projectExpenseCategory_projectId_creative_clock_project_id_fk": {
+          "name": "creative_clock_projectExpenseCategory_projectId_creative_clock_project_id_fk",
+          "tableFrom": "creative_clock_projectExpenseCategory",
+          "tableTo": "creative_clock_project",
+          "columnsFrom": [
+            "projectId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {}
+    },
     "creative_clock_permissions": {
       "name": "creative_clock_permissions",
       "columns": {
@@ -283,28 +421,28 @@
         "creative_clock_userToProjects_userId_creative_clock_user_id_fk": {
           "name": "creative_clock_userToProjects_userId_creative_clock_user_id_fk",
           "tableFrom": "creative_clock_userToProjects",
+          "tableTo": "creative_clock_user",
           "columnsFrom": [
             "userId"
           ],
-          "tableTo": "creative_clock_user",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "creative_clock_userToProjects_projectId_creative_clock_project_id_fk": {
           "name": "creative_clock_userToProjects_projectId_creative_clock_project_id_fk",
           "tableFrom": "creative_clock_userToProjects",
+          "tableTo": "creative_clock_project",
           "columnsFrom": [
             "projectId"
           ],
-          "tableTo": "creative_clock_project",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -340,15 +478,15 @@
         "creative_clock_projectCategory_projectId_creative_clock_project_id_fk": {
           "name": "creative_clock_projectCategory_projectId_creative_clock_project_id_fk",
           "tableFrom": "creative_clock_projectCategory",
+          "tableTo": "creative_clock_project",
           "columnsFrom": [
             "projectId"
           ],
-          "tableTo": "creative_clock_project",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -436,28 +574,28 @@
         "creative_clock_timeEntry_userId_creative_clock_user_id_fk": {
           "name": "creative_clock_timeEntry_userId_creative_clock_user_id_fk",
           "tableFrom": "creative_clock_timeEntry",
+          "tableTo": "creative_clock_user",
           "columnsFrom": [
             "userId"
           ],
-          "tableTo": "creative_clock_user",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         },
         "creative_clock_timeEntry_projectCategoryId_creative_clock_projectCategory_id_fk": {
           "name": "creative_clock_timeEntry_projectCategoryId_creative_clock_projectCategory_id_fk",
           "tableFrom": "creative_clock_timeEntry",
+          "tableTo": "creative_clock_projectCategory",
           "columnsFrom": [
             "projectCategoryId"
           ],
-          "tableTo": "creative_clock_projectCategory",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "cascade"
+          "onDelete": "cascade",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
@@ -466,9 +604,8 @@
   },
   "enums": {},
   "_meta": {
+    "schemas": {},
     "tables": {},
     "columns": {}
-  },
-  "id": "ec670537-b1ef-4da3-9487-6f9592b018f4",
-  "prevId": "2ec5e396-6383-495f-baa1-12acf35ed7e9"
+  }
 }

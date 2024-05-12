@@ -1,10 +1,12 @@
-import type { Config } from 'drizzle-kit';
-import { dbEnv } from './env';
+import type { Config } from "drizzle-kit";
+
+import { dbEnv } from "./env";
 
 export default {
-  schema: './src/schema',
-  out: './src/migrations',
-  driver: 'turso',
+  dialect: "sqlite",
+  schema: "./src/schema",
+  out: "./src/migrations",
+  driver: "turso",
   dbCredentials: {
     url: dbEnv.TURSO_DATABASE_URL,
     authToken: dbEnv.TURSO_AUTH_TOKEN,

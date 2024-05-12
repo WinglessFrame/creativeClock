@@ -1,8 +1,6 @@
 {
-  "version": "5",
+  "version": "6",
   "dialect": "sqlite",
-  "id": "2ec5e396-6383-495f-baa1-12acf35ed7e9",
-  "prevId": "9bc365f2-7cab-4b2c-9cb7-7afee9d83045",
   "tables": {
     "creative_clock_account": {
       "name": "creative_clock_account",
@@ -90,15 +88,15 @@
         "creative_clock_account_userId_creative_clock_user_id_fk": {
           "name": "creative_clock_account_userId_creative_clock_user_id_fk",
           "tableFrom": "creative_clock_account",
-          "tableTo": "creative_clock_user",
           "columnsFrom": [
             "userId"
           ],
+          "tableTo": "creative_clock_user",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {
@@ -142,15 +140,15 @@
         "creative_clock_session_userId_creative_clock_user_id_fk": {
           "name": "creative_clock_session_userId_creative_clock_user_id_fk",
           "tableFrom": "creative_clock_session",
-          "tableTo": "creative_clock_user",
           "columnsFrom": [
             "userId"
           ],
+          "tableTo": "creative_clock_user",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -268,15 +266,15 @@
         "creative_clock_projectCategory_projectId_creative_clock_project_id_fk": {
           "name": "creative_clock_projectCategory_projectId_creative_clock_project_id_fk",
           "tableFrom": "creative_clock_projectCategory",
-          "tableTo": "creative_clock_project",
           "columnsFrom": [
             "projectId"
           ],
+          "tableTo": "creative_clock_project",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -364,28 +362,28 @@
         "creative_clock_timeEntry_userId_creative_clock_user_id_fk": {
           "name": "creative_clock_timeEntry_userId_creative_clock_user_id_fk",
           "tableFrom": "creative_clock_timeEntry",
-          "tableTo": "creative_clock_user",
           "columnsFrom": [
             "userId"
           ],
+          "tableTo": "creative_clock_user",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         },
         "creative_clock_timeEntry_projectCategoryId_creative_clock_projectCategory_id_fk": {
           "name": "creative_clock_timeEntry_projectCategoryId_creative_clock_projectCategory_id_fk",
           "tableFrom": "creative_clock_timeEntry",
-          "tableTo": "creative_clock_projectCategory",
           "columnsFrom": [
             "projectCategoryId"
           ],
+          "tableTo": "creative_clock_projectCategory",
           "columnsTo": [
             "id"
           ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
+          "onUpdate": "no action",
+          "onDelete": "cascade"
         }
       },
       "compositePrimaryKeys": {},
@@ -394,8 +392,9 @@
   },
   "enums": {},
   "_meta": {
-    "schemas": {},
     "tables": {},
     "columns": {}
-  }
+  },
+  "id": "2ec5e396-6383-495f-baa1-12acf35ed7e9",
+  "prevId": "9bc365f2-7cab-4b2c-9cb7-7afee9d83045"
 }

@@ -33,14 +33,16 @@ import {
   SelectValue,
 } from "@acme/ui/select";
 import { Textarea } from "@acme/ui/textarea";
+import { toast } from "@acme/ui/toast";
 
+import { api } from "~/trpc/react";
 import formatMoneyInput from "~/utils/formatMoneyInput";
 import DatePicker from "../DatePicker.client";
 
 const formSchema = z.object({
   date: z.date(),
   project: z.string(),
-  category: z.string(),
+  projectExpenseCategoryId: z.string(),
   notes: z.string().optional(),
   amount: z.string().transform(formatMoneyInput),
   receipt: z.string().optional(),
@@ -56,8 +58,28 @@ const ExpensesDialog = ({ children }: { children: ReactNode }) => {
     },
   });
 
-  const onSubmit: SubmitHandler<z.infer<typeof formSchema>> = (val) => {
-    console.log(val);
+  const getUserExpensesCache = api.useUtils().expenses.getUserExpenses;
+
+  const createExpense = api.expenses.createExpense.useMutation({
+    onError: () => {
+      toast.error("Failed to add entry");
+    },
+    onSettled: () => {
+      getUserExpensesCache.invalidate();
+    },
+  });
+  const onSubmit: SubmitHandler<z.infer<typeof formSchema>> = async (
+    values,
+  ) => {
+    setIsFormOpen(false);
+
+    await createExpense.mutateAsync({
+      date: new Date(),
+      notes: values.notes,
+      projectExpenseCategoryId: values.projectExpenseCategoryId,
+      amount: parseFloat(values.amount),
+      receipt: "test",
+    });
   };
 
   return (
@@ -97,7 +119,7 @@ const ExpensesDialog = ({ children }: { children: ReactNode }) => {
             />
             <FormField
               control={form.control}
-              name="category"
+              name="projectExpenseCategoryId"
               render={({ field }) => (
                 <FormItem className="grid grid-cols-4 items-center gap-4">
                   <Label className="text-right">Category</Label>
