@@ -84,10 +84,10 @@ const DayTabs = ({
     () =>
       currentWeekEntriesQuery.data
         ? convertMinutesToHHMM(
-            currentWeekEntriesQuery.data
-              ?.map((item) => item.timeInMinutes)
-              .reduce((prev, cur) => prev + cur, 0),
-          )
+          currentWeekEntriesQuery.data
+            ?.map((item) => item.timeInMinutes)
+            .reduce((prev, cur) => prev + cur, 0),
+        )
         : "Loading",
     [currentWeekEntriesQuery.data],
   );
@@ -109,14 +109,14 @@ const DayTabs = ({
               <span>{getShortDay(day)}</span>
               <span className="text-xs">
                 {currentWeekEntriesQuery.data &&
-                currentWeekEntriesQuery.data?.find((item) =>
-                  areSameDates(item.date, day),
-                )?.timeInMinutes
+                  currentWeekEntriesQuery.data?.find((item) =>
+                    areSameDates(item.date, day),
+                  )?.timeInMinutes
                   ? convertMinutesToHHMM(
-                      currentWeekEntriesQuery.data?.find?.((item) =>
-                        areSameDates(item.date, day),
-                      )?.timeInMinutes ?? 0,
-                    )
+                    currentWeekEntriesQuery.data?.find?.((item) =>
+                      areSameDates(item.date, day),
+                    )?.timeInMinutes ?? 0,
+                  )
                   : "00:00"}
               </span>
             </TabsTrigger>
@@ -183,7 +183,7 @@ const DayTabs = ({
                 </li>
               ))}
             </ul>
-            <TrackerDialog>
+            <TrackerDialog >
               <Button
                 className="mx-auto mb-4 h-12 w-full max-w-44 text-3xl"
                 variant="outline"

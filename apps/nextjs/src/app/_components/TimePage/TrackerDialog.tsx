@@ -1,6 +1,5 @@
 "use client";
 
-import { randomUUID } from "crypto";
 import { ReactNode, useId, useMemo, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { SubmitHandler, useForm, useWatch } from "react-hook-form";
@@ -46,10 +45,12 @@ import { useTimeContext } from "./timeContext.client";
 type Props = {
   children: ReactNode;
 } & (
-  | {
+    | {
       mode?: "create";
+      entryId?: undefined;
+      formValues?: undefined;
     }
-  | {
+    | {
       mode: "edit";
       entryId: RouterOutputs["timeEntries"]["getUserTimeEntries"][number]["id"];
       formValues: {
@@ -59,7 +60,7 @@ type Props = {
         timeInMinutes: number;
       };
     }
-);
+  );
 
 const timeEntrySchema = z.object({
   projectId: z.string().min(1),
@@ -81,15 +82,15 @@ const TrackerDialog = ({
     resolver: zodResolver(timeEntrySchema),
     defaultValues: formValues
       ? {
-          ...formValues,
-          timeInHHMM: convertMinutesToHHMM(formValues.timeInMinutes),
-        }
+        ...formValues,
+        timeInHHMM: formValues.timeInMinutes,
+      }
       : {
-          projectId: "",
-          notes: "",
-          projectCategoryId: "",
-          timeInHHMM: "",
-        },
+        projectId: "",
+        notes: "",
+        projectCategoryId: "",
+        timeInHHMM: 0,
+      },
   });
   const selectedProjectId = useWatch({
     control: form.control,
@@ -157,14 +158,23 @@ const TrackerDialog = ({
     }
     setIsFormOpen(false);
 
-    await (mode === "create" ? createTimeEntry : updateTimeEntry).mutateAsync({
-      date: selectedDate.date,
-      notes: values.notes,
-      projectCategoryId: values.projectCategoryId,
-      timeInMinutes: values.timeInHHMM,
-      id: entryId,
-    });
-  };
+    if (mode === 'create') {
+      await createTimeEntry.mutateAsync({
+        date: selectedDate.date,
+        notes: values.notes,
+        projectCategoryId: values.projectCategoryId,
+        timeInMinutes: values.timeInHHMM,
+      });
+    } else if (mode === 'edit' && entryId) {
+      await updateTimeEntry.mutateAsync({
+        date: selectedDate.date,
+        notes: values.notes,
+        projectCategoryId: values.projectCategoryId,
+        timeInMinutes: values.timeInHHMM,
+        id: entryId,
+      });
+    }
+  }
 
   const categories = useMemo(() => {
     if (projectsQuery.isSuccess) {
